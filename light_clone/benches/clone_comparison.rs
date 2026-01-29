@@ -46,17 +46,17 @@
 //! | `arc_large_struct` | ~11ns | ~11ns | Size doesn't matter for Arc clone |
 //! | `arc_lc_vs_clone` | ~11ns | ~11ns | Proves .light_clone() == .clone() for Arc |
 //! | `five_arc_fields` | ~41ns | ~41ns | 5 refcount bumps |
-//! | `lc_vs_string_fields/10000` | ~41ns | ~230ns | LightClone 5.6x faster |
-//! | `nested_structs/10000` | ~26ns | ~509ns | LightClone 19.5x faster |
+//! | `lc_vs_string_fields_by_len/10000` | ~41ns | ~230ns | LightClone 5.6x faster |
+//! | `nested_structs_3_levels_by_len/10000` | ~26ns | ~509ns | LightClone 19.5x faster |
 //!
 //! ## Collection Benchmarks (requires persistent collection features)
 //!
 //! | Benchmark | im/imbl/rpds | std | Notes |
 //! |-----------|--------------|-----|-------|
-//! | `collection__clone/10000` | ~11ns | ~25µs | 2000x+ faster |
-//! | `collection__clone_then_mutate/10000` | ~50-80ns | ~25µs | 300-500x faster |
-//! | `map__clone/10000` | ~11ns | ~100µs | 10000x+ faster |
-//! | `map__clone_then_mutate/10000` | ~50-100ns | ~100µs | 1000x+ faster |
+//! | `collection__clone_by_len/10000` | ~11ns | ~25µs | 2000x+ faster |
+//! | `collection__clone_then_mutate_by_len/10000` | ~50-80ns | ~25µs | 300-500x faster |
+//! | `map__clone_by_len/10000` | ~11ns | ~100µs | 10000x+ faster |
+//! | `map__clone_then_mutate_by_len/10000` | ~50-100ns | ~100µs | 1000x+ faster |
 //!
 //! Key insight: Persistent collections have **constant** clone cost regardless of size,
 //! while std collections grow **linearly** with size.
@@ -283,7 +283,7 @@ fn bench_five_arc_fields(c: &mut Criterion) {
 fn bench_lc_vs_string_fields(c: &mut Criterion) {
     let sizes = [10, 100, 1_000, 10_000];
 
-    let mut group = c.benchmark_group("lc_vs_string_fields");
+    let mut group = c.benchmark_group("lc_vs_string_fields_by_len");
 
     for size in sizes {
         let s = make_string(size);
@@ -314,7 +314,7 @@ fn bench_lc_vs_string_fields(c: &mut Criterion) {
 fn bench_nested_structs(c: &mut Criterion) {
     let sizes = [10, 100, 1_000, 10_000];
 
-    let mut group = c.benchmark_group("nested_structs_3_levels");
+    let mut group = c.benchmark_group("nested_structs_3_levels_by_len");
 
     for size in sizes {
         let s = make_string(size);
@@ -348,7 +348,7 @@ fn bench_nested_structs(c: &mut Criterion) {
 fn bench_string_sizes(c: &mut Criterion) {
     let sizes = [10, 100, 1_000, 10_000];
 
-    let mut group = c.benchmark_group("string_size_comparison");
+    let mut group = c.benchmark_group("string_size_comparison_by_len");
 
     for size in sizes {
         let s = make_string(size);
@@ -414,7 +414,7 @@ mod persistent_benchmarks {
     pub fn bench_collection_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("collection__clone");
+        let mut group = c.benchmark_group("collection__clone_by_len");
 
         for size in sizes {
             // std::Vec (baseline)
@@ -461,7 +461,7 @@ mod persistent_benchmarks {
     pub fn bench_collection_clone_then_mutate(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("collection__clone_then_mutate");
+        let mut group = c.benchmark_group("collection__clone_then_mutate_by_len");
 
         for size in sizes {
             // std::Vec (baseline)
@@ -524,7 +524,7 @@ mod persistent_benchmarks {
     pub fn bench_map_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("map__clone");
+        let mut group = c.benchmark_group("map__clone_by_len");
 
         for size in sizes {
             // std::HashMap (baseline)
@@ -576,7 +576,7 @@ mod persistent_benchmarks {
     pub fn bench_map_clone_then_mutate(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("map__clone_then_mutate");
+        let mut group = c.benchmark_group("map__clone_then_mutate_by_len");
 
         for size in sizes {
             // std::HashMap (baseline)
