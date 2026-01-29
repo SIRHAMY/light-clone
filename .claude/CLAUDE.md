@@ -1,3 +1,71 @@
+# LightClone
+
+A Rust library providing compile-time enforcement for O(1) clone operations.
+
+## Project Overview
+
+LightClone is a marker trait and derive macro system that guarantees cheap cloning by only allowing types where cloning involves:
+- Atomic refcount increments (`Arc`)
+- Non-atomic refcount increments (`Rc`)
+- Bitwise copy operations (`Copy` types)
+
+## Workspace Structure
+
+```
+light_clone/          # Main library crate
+  src/
+    lib.rs            # Public API re-exports
+    trait_def.rs      # LightClone trait definition
+    aliases.rs        # LightStr type alias (Arc<str>)
+    conversions.rs    # IntoLightStr trait
+    impls/            # Trait implementations
+      primitives.rs   # i8-u128, f32, f64, bool, char
+      smart_pointers.rs # Arc, Rc
+      tuples.rs       # Tuples up to 12 elements
+      containers.rs   # Unit, PhantomData, Option, Result
+      im_collections.rs    # Feature: im crate
+      imbl_collections.rs  # Feature: imbl crate
+      rpds_collections.rs  # Feature: rpds crate
+  tests/              # Integration tests
+    ui/               # Compile-fail tests (trybuild)
+  benches/            # Criterion benchmarks
+
+light_clone_derive/   # Procedural macro crate
+  src/lib.rs          # Derive macro for structs and enums
+```
+
+## Development Commands
+
+```bash
+# Run all tests
+cargo test --workspace --all-features
+
+# Run benchmarks
+cargo bench -p light_clone --all-features
+
+# Format code
+cargo fmt
+
+# Lint
+cargo clippy --workspace --all-features
+```
+
+## Key Design Decisions
+
+- **Compile-time safety**: Invalid types (String, Vec, etc.) are rejected at compile time
+- **Zero runtime overhead**: `.light_clone()` compiles to the same code as `.clone()`
+- **Ergonomic API**: `.lc()` shorthand for `.light_clone()`
+- **Persistent collections**: Feature-gated support for im, imbl, and rpds crates
+
+## Adding New Implementations
+
+When adding LightClone implementations:
+1. Only implement for types with O(1) clone (Arc, Rc, Copy, persistent collections)
+2. Add tests in the appropriate test file
+3. For collections, use feature gates
+
+---
+
 # Coding Style Guide
 
 A functional-ish programming style guide emphasizing clarity, safety, and maintainability.
