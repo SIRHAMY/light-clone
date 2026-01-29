@@ -229,9 +229,9 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Parse struct with `syn::DeriveInput`
-- [ ] Extract struct fields (named and tuple structs)
-- [ ] Generate `LcClone` impl:
+- [x] Parse struct with `syn::DeriveInput`
+- [x] Extract struct fields (named and tuple structs)
+- [x] Generate `LcClone` impl:
   ```rust
   impl LcClone for StructName {
       fn lc(&self) -> Self {
@@ -243,7 +243,7 @@ The implementation follows a bottom-up approach:
       }
   }
   ```
-- [ ] Generate `Clone` impl that delegates to `.lc()`:
+- [x] Generate `Clone` impl that delegates to `.lc()`:
   ```rust
   impl Clone for StructName {
       fn clone(&self) -> Self {
@@ -251,25 +251,25 @@ The implementation follows a bottom-up approach:
       }
   }
   ```
-- [ ] Handle tuple structs: `struct Foo(Arc<str>, i32)`
-- [ ] Handle unit structs: `struct Marker;`
-- [ ] Emit clear error for enums: "LcClone derive is not yet supported for enums. Consider wrapping in Arc."
-- [ ] Re-export `LcClone` derive macro from `lc_clone` crate
-- [ ] Write tests: basic struct with primitives
-- [ ] Write tests: struct with Arc<str> fields
-- [ ] Write tests: nested struct (struct containing another LcClone struct)
-- [ ] Write tests: tuple struct
-- [ ] Write tests: unit struct
-- [ ] Set up trybuild for compile-fail tests
-- [ ] Write compile-fail test: struct with String field (should fail with trait bound error)
-- [ ] Write compile-fail test: struct with Vec<T> field
+- [x] Handle tuple structs: `struct Foo(Arc<str>, i32)`
+- [x] Handle unit structs: `struct Marker;`
+- [x] Emit clear error for enums: "LcClone derive is not yet supported for enums. Consider wrapping in Arc."
+- [x] Re-export `LcClone` derive macro from `lc_clone` crate
+- [x] Write tests: basic struct with primitives
+- [x] Write tests: struct with Arc<str> fields
+- [x] Write tests: nested struct (struct containing another LcClone struct)
+- [x] Write tests: tuple struct
+- [x] Write tests: unit struct
+- [x] Set up trybuild for compile-fail tests
+- [x] Write compile-fail test: struct with String field (should fail with trait bound error)
+- [x] Write compile-fail test: struct with Vec<T> field
 
 **Verification:**
 
-- [ ] `#[derive(LcClone)]` works on structs with LcClone fields
-- [ ] Compile error occurs for structs with non-LcClone fields
-- [ ] Tests pass: `cargo test --workspace`
-- [ ] Code review passes
+- [x] `#[derive(LcClone)]` works on structs with LcClone fields
+- [x] Compile error occurs for structs with non-LcClone fields
+- [x] Tests pass: `cargo test --workspace`
+- [x] Code review passes
 
 **Commit:** `[001][P5] Feature: Add derive macro for LcClone with Clone delegation`
 
@@ -416,6 +416,7 @@ The implementation follows a bottom-up approach:
 | P2 | Complete | cf8f0be | LcClone trait and primitive implementations added |
 | P3 | Complete | fd54879 | LcClone for Arc<T> and Rc<T> with ?Sized support |
 | P4 | Complete | 44ecd26 | LcClone for Option, Result, tuples (1-12), PhantomData, unit |
+| P5 | Complete | c729c95 | Derive macro with LcClone and Clone impls for structs |
 
 ## Design Details
 

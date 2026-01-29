@@ -7,3 +7,6 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 lc_clone_derive = { path = "../lc_clone_derive" }
+
+[dev-dependencies]
+trybuild = "1"
