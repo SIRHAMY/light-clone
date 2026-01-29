@@ -15,3 +15,17 @@ impl<T: ?Sized> LightClone for Rc<T> {
         Rc::clone(self)
     }
 }
+
+impl<T: ?Sized> LightClone for std::sync::Weak<T> {
+    #[inline]
+    fn light_clone(&self) -> Self {
+        std::sync::Weak::clone(self)
+    }
+}
+
+impl<T: ?Sized> LightClone for std::rc::Weak<T> {
+    #[inline]
+    fn light_clone(&self) -> Self {
+        std::rc::Weak::clone(self)
+    }
+}

@@ -106,3 +106,72 @@ fn test_lc_returns_independent_copy() {
     assert_eq!(cloned, 42);
     assert_eq!(original, 100);
 }
+
+#[test]
+fn test_nonzero_unsigned() {
+    use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
+
+    let nz_u8 = NonZeroU8::new(1).unwrap();
+    assert_eq!(nz_u8.light_clone(), nz_u8);
+
+    let nz_u16 = NonZeroU16::new(1000).unwrap();
+    assert_eq!(nz_u16.light_clone(), nz_u16);
+
+    let nz_u32 = NonZeroU32::new(100_000).unwrap();
+    assert_eq!(nz_u32.light_clone(), nz_u32);
+
+    let nz_u64 = NonZeroU64::new(10_000_000_000).unwrap();
+    assert_eq!(nz_u64.light_clone(), nz_u64);
+
+    let nz_u128 = NonZeroU128::new(1).unwrap();
+    assert_eq!(nz_u128.light_clone(), nz_u128);
+
+    let nz_usize = NonZeroUsize::new(1024).unwrap();
+    assert_eq!(nz_usize.light_clone(), nz_usize);
+}
+
+#[test]
+fn test_nonzero_signed() {
+    use std::num::{NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize};
+
+    let nz_i8 = NonZeroI8::new(-42).unwrap();
+    assert_eq!(nz_i8.light_clone(), nz_i8);
+
+    let nz_i16 = NonZeroI16::new(-1000).unwrap();
+    assert_eq!(nz_i16.light_clone(), nz_i16);
+
+    let nz_i32 = NonZeroI32::new(-100_000).unwrap();
+    assert_eq!(nz_i32.light_clone(), nz_i32);
+
+    let nz_i64 = NonZeroI64::new(-10_000_000_000).unwrap();
+    assert_eq!(nz_i64.light_clone(), nz_i64);
+
+    let nz_i128 = NonZeroI128::new(-1).unwrap();
+    assert_eq!(nz_i128.light_clone(), nz_i128);
+
+    let nz_isize = NonZeroIsize::new(-1024).unwrap();
+    assert_eq!(nz_isize.light_clone(), nz_isize);
+}
+
+#[test]
+fn test_duration() {
+    use std::time::Duration;
+
+    let duration = Duration::from_secs(60);
+    assert_eq!(duration.light_clone(), duration);
+
+    let nanos = Duration::from_nanos(12345);
+    assert_eq!(nanos.light_clone(), nanos);
+
+    let zero = Duration::ZERO;
+    assert_eq!(zero.light_clone(), zero);
+}
+
+#[test]
+fn test_instant() {
+    use std::time::Instant;
+
+    let now = Instant::now();
+    let cloned = now.light_clone();
+    assert_eq!(now, cloned);
+}

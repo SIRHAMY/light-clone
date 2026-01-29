@@ -103,3 +103,78 @@ fn rc_with_large_inner_type_still_cheap() {
     assert!(Rc::ptr_eq(&original, &cloned));
     assert_eq!(Rc::strong_count(&original), 2);
 }
+
+// Weak pointer tests
+
+#[test]
+fn arc_weak_lc_returns_equivalent_weak() {
+    let strong = Arc::new(42i32);
+    let weak = Arc::downgrade(&strong);
+    let cloned = weak.light_clone();
+
+    // Both weak pointers should upgrade to the same Arc
+    assert_eq!(weak.upgrade().map(|a| *a), Some(42));
+    assert_eq!(cloned.upgrade().map(|a| *a), Some(42));
+}
+
+#[test]
+fn arc_weak_count_increments_after_lc() {
+    let strong = Arc::new(42i32);
+    let weak = Arc::downgrade(&strong);
+    assert_eq!(Arc::weak_count(&strong), 1);
+
+    let cloned = weak.light_clone();
+    assert_eq!(Arc::weak_count(&strong), 2);
+
+    drop(cloned);
+    assert_eq!(Arc::weak_count(&strong), 1);
+}
+
+#[test]
+fn arc_weak_after_strong_dropped() {
+    let strong = Arc::new(42i32);
+    let weak = Arc::downgrade(&strong);
+    drop(strong);
+
+    // Weak should be expired
+    assert!(weak.upgrade().is_none());
+
+    // Clone should also be expired
+    let cloned = weak.light_clone();
+    assert!(cloned.upgrade().is_none());
+}
+
+#[test]
+fn rc_weak_lc_returns_equivalent_weak() {
+    let strong = Rc::new(42i32);
+    let weak = Rc::downgrade(&strong);
+    let cloned = weak.light_clone();
+
+    assert_eq!(weak.upgrade().map(|a| *a), Some(42));
+    assert_eq!(cloned.upgrade().map(|a| *a), Some(42));
+}
+
+#[test]
+fn rc_weak_count_increments_after_lc() {
+    let strong = Rc::new(42i32);
+    let weak = Rc::downgrade(&strong);
+    assert_eq!(Rc::weak_count(&strong), 1);
+
+    let cloned = weak.light_clone();
+    assert_eq!(Rc::weak_count(&strong), 2);
+
+    drop(cloned);
+    assert_eq!(Rc::weak_count(&strong), 1);
+}
+
+#[test]
+fn rc_weak_after_strong_dropped() {
+    let strong = Rc::new(42i32);
+    let weak = Rc::downgrade(&strong);
+    drop(strong);
+
+    assert!(weak.upgrade().is_none());
+
+    let cloned = weak.light_clone();
+    assert!(cloned.upgrade().is_none());
+}

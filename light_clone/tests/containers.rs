@@ -86,3 +86,38 @@ fn result_with_clone_only_error_type() {
     let cloned = value.light_clone();
     assert_eq!(value, cloned);
 }
+
+#[test]
+fn array_of_primitives() {
+    let arr: [i32; 5] = [1, 2, 3, 4, 5];
+    let cloned = arr.light_clone();
+    assert_eq!(arr, cloned);
+}
+
+#[test]
+fn array_of_bools() {
+    let arr: [bool; 3] = [true, false, true];
+    let cloned = arr.light_clone();
+    assert_eq!(arr, cloned);
+}
+
+#[test]
+fn array_empty() {
+    let arr: [i32; 0] = [];
+    let cloned = arr.light_clone();
+    assert_eq!(arr, cloned);
+}
+
+#[test]
+fn array_single_element() {
+    let arr: [char; 1] = ['🦀'];
+    let cloned = arr.light_clone();
+    assert_eq!(arr, cloned);
+}
+
+#[test]
+fn array_nested() {
+    let arr: [[i32; 2]; 3] = [[1, 2], [3, 4], [5, 6]];
+    let cloned = arr.light_clone();
+    assert_eq!(arr, cloned);
+}

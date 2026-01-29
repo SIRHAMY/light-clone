@@ -29,3 +29,10 @@ impl<T: LightClone, E: Clone> LightClone for Result<T, E> {
         }
     }
 }
+
+impl<T: LightClone + Copy, const N: usize> LightClone for [T; N] {
+    #[inline]
+    fn light_clone(&self) -> Self {
+        *self
+    }
+}

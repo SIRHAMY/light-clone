@@ -1,4 +1,9 @@
 use crate::LightClone;
+use std::num::{
+    NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize, NonZeroU128,
+    NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
+};
+use std::time::{Duration, Instant};
 
 /// Macro to implement LightClone for Copy types.
 /// For Copy types, `.light_clone()` is simply `*self` (bitwise copy).
@@ -16,5 +21,45 @@ macro_rules! impl_light_clone_for_copy {
 }
 
 impl_light_clone_for_copy!(
-    i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64, bool, char,
+    // Primitives
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    isize,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    usize,
+    f32,
+    f64,
+    bool,
+    char,
+    // NonZero types
+    NonZeroI8,
+    NonZeroI16,
+    NonZeroI32,
+    NonZeroI64,
+    NonZeroI128,
+    NonZeroIsize,
+    NonZeroU8,
+    NonZeroU16,
+    NonZeroU32,
+    NonZeroU64,
+    NonZeroU128,
+    NonZeroUsize,
+    // Time types
+    Duration,
+    Instant,
 );
+
+// Shared references are Copy types
+impl<T: ?Sized> LightClone for &T {
+    #[inline]
+    fn light_clone(&self) -> Self {
+        self
+    }
+}
