@@ -1,0 +1,83 @@
+{
+  "name": "Claude Code Sandbox",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:America/Los_Angeles}",
+      "CLAUDE_CODE_VERSION": "latest",
+      "GIT_DELTA_VERSION": "0.18.2",
+      "ZSH_IN_DOCKER_VERSION": "1.2.0"
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "9.0",
+      "additionalVersions": "8.0"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW",
+    "-v", "${localWorkspaceFolder}:/workspaces/${localWorkspaceFolderBasename}:Z"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "ms-dotnettools.csdevkit",
+        "ms-python.python"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        }
+      }
+    }
+  },
+  "forwardPorts": [3000, 5000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Dev Server",
+      "onAutoForward": "openBrowser"
+    },
+    "5000": {
+      "label": "Alt Dev Server",
+      "onAutoForward": "openBrowser"
+    },
+    "default": {
+      "onAutoForward": "notify"
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=claude-sandbox-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=claude-sandbox-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "workspaceMount": "",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude /commandhistory",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand"
+}
