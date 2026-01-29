@@ -77,8 +77,12 @@ done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 # - VS Code marketplace (extensions)
 # - NuGet (.NET packages)
 # - PyPI (Python packages)
+# - crates.io (Rust packages)
 for domain in \
     "registry.npmjs.org" \
+    "crates.io" \
+    "static.crates.io" \
+    "index.crates.io" \
     "api.anthropic.com" \
     "sentry.io" \
     "statsig.anthropic.com" \
