@@ -335,27 +335,27 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Add `im` as optional dependency (version 15.x)
-- [ ] Add `rpds` as optional dependency (version 1.x)
-- [ ] Define features in Cargo.toml: `im = ["dep:im"]`, `rpds = ["dep:rpds"]`, `full = ["im", "rpds"]`
-- [ ] Implement LcClone for `im::Vector<T>` where `T: Clone`
-- [ ] Implement LcClone for `im::HashMap<K, V>` where `K: Clone + Eq + Hash, V: Clone`
-- [ ] Implement LcClone for `im::OrdMap<K, V>` where `K: Clone + Ord, V: Clone`
-- [ ] Implement LcClone for `im::HashSet<T>` where `T: Clone + Eq + Hash`
-- [ ] Implement LcClone for `im::OrdSet<T>` where `T: Clone + Ord`
-- [ ] Implement LcClone for rpds equivalents (Vector, HashTrieMap, etc.)
-- [ ] Add type aliases behind `im` feature: `LcList<T>`, `LcMap<K, V>`, `LcSet<T>`, `LcOrdMap<K, V>`
-- [ ] Write tests with `im` feature: Vector, HashMap, OrdMap operations
-- [ ] Write tests with `rpds` feature: Vector, HashTrieMap operations
-- [ ] Write test: struct with LcList field compiles when im feature enabled
+- [x] Add `im` as optional dependency (version 15.x)
+- [x] Add `rpds` as optional dependency (version 1.x)
+- [x] Define features in Cargo.toml: `im = ["dep:im"]`, `rpds = ["dep:rpds"]`, `full = ["im", "rpds"]`
+- [x] Implement LcClone for `im::Vector<T>` where `T: Clone`
+- [x] Implement LcClone for `im::HashMap<K, V>` where `K: Clone + Eq + Hash, V: Clone`
+- [x] Implement LcClone for `im::OrdMap<K, V>` where `K: Clone + Ord, V: Clone`
+- [x] Implement LcClone for `im::HashSet<T>` where `T: Clone + Eq + Hash`
+- [x] Implement LcClone for `im::OrdSet<T>` where `T: Clone + Ord`
+- [x] Implement LcClone for rpds equivalents (Vector, HashTrieMap, etc.)
+- [x] Add type aliases behind `im` feature: `LcList<T>`, `LcMap<K, V>`, `LcSet<T>`, `LcOrdMap<K, V>`
+- [x] Write tests with `im` feature: Vector, HashMap, OrdMap operations
+- [x] Write tests with `rpds` feature: Vector, HashTrieMap operations
+- [x] Write test: struct with LcList field compiles when im feature enabled
 
 **Verification:**
 
-- [ ] `cargo test -p lc_clone --features im` passes
-- [ ] `cargo test -p lc_clone --features rpds` passes
-- [ ] `cargo test -p lc_clone --features full` passes
-- [ ] Type aliases are available only when features enabled
-- [ ] Code review passes
+- [x] `cargo test -p lc_clone --features im` passes
+- [x] `cargo test -p lc_clone --features rpds` passes
+- [x] `cargo test -p lc_clone --features full` passes
+- [x] Type aliases are available only when features enabled
+- [x] Code review passes
 
 **Commit:** `[001][P7] Feature: Add im and rpds feature flags with LcClone implementations`
 
@@ -418,6 +418,7 @@ The implementation follows a bottom-up approach:
 | P4 | Complete | 44ecd26 | LcClone for Option, Result, tuples (1-12), PhantomData, unit |
 | P5 | Complete | c729c95 | Derive macro with LcClone and Clone impls for structs |
 | P6 | Complete | 7188f59 | LcStr type alias and IntoLcStr trait with idempotent impl |
+| P7 | Complete | 8e95336 | im and rpds feature flags with LcClone implementations |
 
 ## Design Details
 

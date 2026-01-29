@@ -12,5 +12,9 @@ pub use lc_clone_derive::LcClone;
 // Re-export type aliases
 pub use aliases::LcStr;
 
+// Re-export collection aliases (behind feature flags)
+#[cfg(feature = "im")]
+pub use aliases::{LcList, LcMap, LcOrdMap, LcSet};
+
 // Re-export conversion traits
 pub use conversions::IntoLcStr;
