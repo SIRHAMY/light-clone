@@ -1,0 +1,9 @@
+[package]
+name = "lc_clone"
+version = "0.1.0"
+edition = "2021"
+description = "Compile-time enforcement for O(1) clone operations"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+lc_clone_derive = { path = "../lc_clone_derive" }
