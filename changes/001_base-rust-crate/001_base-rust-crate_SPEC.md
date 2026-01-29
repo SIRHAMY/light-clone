@@ -151,18 +151,18 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Implement `LcClone for Arc<T>` where `T: ?Sized` (no bound on T — Arc clone is always O(1))
-- [ ] Implement `LcClone for Rc<T>` where `T: ?Sized`
-- [ ] Verify `Arc<str>` and `Arc<[T]>` work via the generic impl (they should)
-- [ ] Write tests for `Arc<i32>`, `Arc<str>`, `Arc<[u8]>`
-- [ ] Write tests for `Rc<i32>`, `Rc<str>`, `Rc<[u8]>`
-- [ ] Write test verifying Arc::strong_count increments correctly after `.lc()`
+- [x] Implement `LcClone for Arc<T>` where `T: ?Sized` (no bound on T — Arc clone is always O(1))
+- [x] Implement `LcClone for Rc<T>` where `T: ?Sized`
+- [x] Verify `Arc<str>` and `Arc<[T]>` work via the generic impl (they should)
+- [x] Write tests for `Arc<i32>`, `Arc<str>`, `Arc<[u8]>`
+- [x] Write tests for `Rc<i32>`, `Rc<str>`, `Rc<[u8]>`
+- [x] Write test verifying Arc::strong_count increments correctly after `.lc()`
 
 **Verification:**
 
-- [ ] `Arc<T>` and `Rc<T>` implement LcClone for any T
-- [ ] Tests pass: `cargo test -p lc_clone`
-- [ ] Code review passes
+- [x] `Arc<T>` and `Rc<T>` implement LcClone for any T
+- [x] Tests pass: `cargo test -p lc_clone`
+- [x] Code review passes
 
 **Commit:** `[001][P3] Feature: Add LcClone for Arc and Rc smart pointers`
 
@@ -414,6 +414,7 @@ The implementation follows a bottom-up approach:
 |-------|--------|--------|-------|
 | P1 | Complete | 50cfbe4 | Workspace structure created with both crates |
 | P2 | Complete | cf8f0be | LcClone trait and primitive implementations added |
+| P3 | Complete | fd54879 | LcClone for Arc<T> and Rc<T> with ?Sized support |
 
 ## Design Details
 
