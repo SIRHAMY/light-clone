@@ -293,22 +293,22 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Create `LcStr` type alias: `pub type LcStr = Arc<str>;`
-- [ ] Create `IntoLcStr` trait with `fn into_lc(self) -> LcStr`
-- [ ] Implement `IntoLcStr for &str`
-- [ ] Implement `IntoLcStr for String`
-- [ ] Implement `IntoLcStr for &String`
-- [ ] Add documentation with examples showing both alias and underlying type
-- [ ] Write test: create LcStr from &str using into_lc()
-- [ ] Write test: create LcStr from String using into_lc()
-- [ ] Write test: use LcStr in a derived struct
+- [x] Create `LcStr` type alias: `pub type LcStr = Arc<str>;`
+- [x] Create `IntoLcStr` trait with `fn into_lc(self) -> LcStr`
+- [x] Implement `IntoLcStr for &str`
+- [x] Implement `IntoLcStr for String`
+- [x] Implement `IntoLcStr for &String`
+- [x] Add documentation with examples showing both alias and underlying type
+- [x] Write test: create LcStr from &str using into_lc()
+- [x] Write test: create LcStr from String using into_lc()
+- [x] Write test: use LcStr in a derived struct
 
 **Verification:**
 
-- [ ] Type aliases work as drop-in for Arc<str>
-- [ ] IntoLcStr provides ergonomic conversion
-- [ ] Tests pass: `cargo test -p lc_clone`
-- [ ] Code review passes
+- [x] Type aliases work as drop-in for Arc<str>
+- [x] IntoLcStr provides ergonomic conversion
+- [x] Tests pass: `cargo test -p lc_clone`
+- [x] Code review passes
 
 **Commit:** `[001][P6] Feature: Add LcStr type alias and IntoLcStr conversion trait`
 
@@ -417,6 +417,7 @@ The implementation follows a bottom-up approach:
 | P3 | Complete | fd54879 | LcClone for Arc<T> and Rc<T> with ?Sized support |
 | P4 | Complete | 44ecd26 | LcClone for Option, Result, tuples (1-12), PhantomData, unit |
 | P5 | Complete | c729c95 | Derive macro with LcClone and Clone impls for structs |
+| P6 | Complete | 7188f59 | LcStr type alias and IntoLcStr trait with idempotent impl |
 
 ## Design Details
 
