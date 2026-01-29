@@ -2,11 +2,17 @@
 name = "light_clone"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70.0"
 description = "Compile-time enforcement for O(1) clone operations"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/SIRHAMY/light-clone"
+documentation = "https://docs.rs/light_clone"
+readme = "../README.md"
+keywords = ["clone", "arc", "rc", "derive", "zero-cost"]
+categories = ["rust-patterns", "memory-management"]
 
 [dependencies]
-light_clone_derive = { path = "../light_clone_derive" }
+light_clone_derive = { version = "0.1.0", path = "../light_clone_derive" }
 im = { version = "15", optional = true }
 imbl = { version = "3", optional = true }
 rpds = { version = "1", optional = true }

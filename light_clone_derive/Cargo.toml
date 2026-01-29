@@ -2,8 +2,13 @@
 name = "light_clone_derive"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70.0"
 description = "Derive macro for light_clone crate"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/SIRHAMY/light-clone"
+documentation = "https://docs.rs/light_clone_derive"
+keywords = ["clone", "derive", "macro"]
+categories = ["rust-patterns"]
 
 [lib]
 proc-macro = true
