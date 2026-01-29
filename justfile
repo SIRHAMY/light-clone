@@ -1,4 +1,4 @@
-# lc_clone development tasks
+# light_clone development tasks
 
 # List available recipes
 default:
@@ -30,11 +30,11 @@ build:
 
 # Run benchmarks (full output)
 bench:
-    cargo bench -p lc_clone
+    cargo bench -p light_clone
 
 # Run benchmarks with all features
 bench-full:
-    cargo bench -p lc_clone --all-features
+    cargo bench -p light_clone --all-features
 
 # Check if cargo-criterion is installed
 [private]
@@ -48,20 +48,20 @@ check-criterion-table: check-cargo-criterion
 
 # Generate benchmark comparison table as markdown
 bench-table: check-criterion-table
-    cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table
+    cargo criterion -p light_clone --message-format=json 2>/dev/null | criterion-table
 
 # Generate benchmark table and save to file
 bench-table-save: check-criterion-table
-    cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
+    cargo criterion -p light_clone --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
     @echo "Saved to BENCHMARKS.md"
 
 # Run benchmarks with im feature
 bench-im: check-criterion-table
-    cargo criterion -p lc_clone --features im --message-format=json 2>/dev/null | criterion-table
+    cargo criterion -p light_clone --features im --message-format=json 2>/dev/null | criterion-table
 
 # Generate benchmark table with all features and save to file
 bench-full-table-save: check-criterion-table
-    cargo criterion -p lc_clone --all-features --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
+    cargo criterion -p light_clone --all-features --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
     @echo "Saved to BENCHMARKS.md (with all features)"
 
 # Build documentation

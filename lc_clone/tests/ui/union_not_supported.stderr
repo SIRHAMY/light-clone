@@ -1,5 +1,0 @@
-error: LcClone derive is not supported for unions.
- --> tests/ui/union_not_supported.rs:4:7
-  |
-4 | union MyUnion {
-  |       ^^^^^^^

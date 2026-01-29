@@ -2,7 +2,7 @@
 
 - Tests that ensure that LightClone is failing compile time for bad types
 - Use in a real project to measure ergonomics
-- Change name to LightClone with main entry being light_clone, lc still okay for shorthand if ppl want it.
+- ~~Change name to LightClone with main entry being light_clone, lc still okay for shorthand if ppl want it.~~ DONE - Renamed to `light_clone` crate, `LightClone` trait with `light_clone()` method (`.lc()` shorthand available)
 - ~~Add compatibility for additional immutable crates like imbl and rpds~~ DONE - im, imbl, and rpds all supported with feature flags
 
 # P1
