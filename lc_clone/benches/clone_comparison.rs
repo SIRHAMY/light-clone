@@ -10,22 +10,31 @@
 //!
 //! ```sh
 //! cargo bench -p lc_clone              # Core benchmarks only
-//! cargo bench -p lc_clone --all-features  # Include collection benchmarks
+//! cargo bench -p lc_clone --all-features  # Full comparison (im, imbl, rpds vs std)
 //! ```
 //!
 //! # Benchmark Organization
 //!
 //! Benchmarks are organized by what they test:
 //!
-//! - `arc_*` - Arc overhead verification
-//! - `collection__*` - Raw collection clone/mutate (Vec vs LcList)
-//! - `map__*` - Raw map clone/mutate (HashMap vs LcMap)
-//! - `struct_with_collection__*` - Structs containing collections
-//! - `struct_with_map__*` - Structs containing maps
+//! - `arc_*` - Arc overhead verification (always available)
+//! - `collection__*` - Vector clone/mutate comparing std, im, imbl, rpds
+//! - `map__*` - Map clone/mutate comparing std, im, imbl, rpds
 //!
-//! Each category has two variants:
+//! Each collection/map category has two variants:
 //! - `__clone` - Pure clone performance
 //! - `__clone_then_mutate` - Clone followed by a mutation (common functional pattern)
+//!
+//! # Persistent Collection Libraries
+//!
+//! The benchmarks compare these libraries (when their features are enabled):
+//!
+//! | Library | Feature | Vector Type | Map Type |
+//! |---------|---------|-------------|----------|
+//! | std | (always) | `Vec<T>` | `HashMap<K,V>` |
+//! | im | `im` | `im::Vector<T>` | `im::HashMap<K,V>` |
+//! | imbl | `imbl` | `imbl::Vector<T>` | `imbl::HashMap<K,V>` |
+//! | rpds | `rpds` | `rpds::Vector<T>` | `rpds::HashTrieMap<K,V>` |
 //!
 //! # Expected Results Summary
 //!
@@ -40,18 +49,16 @@
 //! | `lc_vs_string_fields/10000` | ~41ns | ~230ns | LcClone 5.6x faster |
 //! | `nested_structs/10000` | ~26ns | ~509ns | LcClone 19.5x faster |
 //!
-//! ## Collection Benchmarks (requires `im` feature)
+//! ## Collection Benchmarks (requires persistent collection features)
 //!
-//! | Benchmark | LcClone | Std Clone | Notes |
-//! |-----------|---------|-----------|-------|
+//! | Benchmark | im/imbl/rpds | std | Notes |
+//! |-----------|--------------|-----|-------|
 //! | `collection__clone/10000` | ~11ns | ~25µs | 2000x+ faster |
-//! | `collection__clone_then_mutate/10000` | ~50ns | ~25µs | 500x+ faster |
+//! | `collection__clone_then_mutate/10000` | ~50-80ns | ~25µs | 300-500x faster |
 //! | `map__clone/10000` | ~11ns | ~100µs | 10000x+ faster |
-//! | `map__clone_then_mutate/10000` | ~80ns | ~100µs | 1000x+ faster |
-//! | `struct_with_collection__clone/10000` | ~22ns | ~3µs | 100x+ faster |
-//! | `struct_with_map__clone/10000` | ~11ns | ~250µs | 20000x+ faster |
+//! | `map__clone_then_mutate/10000` | ~50-100ns | ~100µs | 1000x+ faster |
 //!
-//! Key insight: LcClone performance is **constant** regardless of data size,
+//! Key insight: Persistent collections have **constant** clone cost regardless of size,
 //! while std collections grow **linearly** with size.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
@@ -381,40 +388,26 @@ fn bench_arc_lc_vs_clone(c: &mut Criterion) {
 }
 
 // =============================================================================
-// Feature-gated benchmarks for `im` crate
+// Feature-gated benchmarks for persistent collections (im, imbl, rpds)
 // =============================================================================
 
-#[cfg(feature = "im")]
-mod im_benchmarks {
+/// Benchmarks comparing persistent collection libraries (im, imbl, rpds) against std.
+///
+/// These benchmarks require at least one persistent collection feature to be enabled.
+/// Run with `--all-features` to see all libraries compared side-by-side.
+#[cfg(any(feature = "im", feature = "imbl", feature = "rpds"))]
+mod persistent_benchmarks {
     use super::*;
-    use im::{HashMap as ImHashMap, Vector};
-    use lc_clone::{LcList, LcMap, LcStr};
     use std::collections::HashMap;
-
-    /// Benchmark: `im::Vector<i32>.lc()` vs `.clone()`
-    ///
-    /// Expected: Identical performance, as im::Vector uses structural sharing
-    /// and clone is O(1). The `.lc()` simply delegates to `.clone()`.
-    pub fn bench_im_vector(c: &mut Criterion) {
-        let vector: Vector<i32> = (0..1000).collect();
-
-        let mut group = c.benchmark_group("im_vector");
-
-        group.bench_function("lc", |b| b.iter(|| black_box(vector.lc())));
-
-        group.bench_function("clone", |b| b.iter(|| black_box(vector.clone())));
-
-        group.finish();
-    }
 
     // =========================================================================
     // Collection benchmarks (clone and clone-then-mutate)
     // =========================================================================
 
-    /// Benchmark: Collection clone - Vec<i32> vs LcList<i32>
+    /// Benchmark: Collection clone - comparing Vec against persistent vectors
     ///
     /// Expected:
-    /// - LcList: constant ~11ns (structural sharing)
+    /// - Persistent vectors: constant ~11ns (structural sharing)
     /// - Vec: grows linearly with size
     pub fn bench_collection_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
@@ -422,18 +415,38 @@ mod im_benchmarks {
         let mut group = c.benchmark_group("collection__clone");
 
         for size in sizes {
-            let lc_list: LcList<i32> = (0..size as i32).collect();
+            // std::Vec (baseline)
             let vec: Vec<i32> = (0..size as i32).collect();
-
-            group.bench_with_input(
-                BenchmarkId::new("lc_list", size),
-                &lc_list,
-                |b, list| b.iter(|| black_box(list.lc())),
-            );
-
-            group.bench_with_input(BenchmarkId::new("vec", size), &vec, |b, v| {
+            group.bench_with_input(BenchmarkId::new("std_vec", size), &vec, |b, v| {
                 b.iter(|| black_box(v.clone()))
             });
+
+            // im::Vector
+            #[cfg(feature = "im")]
+            {
+                let im_vec: im::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("im_vector", size), &im_vec, |b, v| {
+                    b.iter(|| black_box(v.lc()))
+                });
+            }
+
+            // imbl::Vector
+            #[cfg(feature = "imbl")]
+            {
+                let imbl_vec: imbl::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("imbl_vector", size), &imbl_vec, |b, v| {
+                    b.iter(|| black_box(v.lc()))
+                });
+            }
+
+            // rpds::Vector
+            #[cfg(feature = "rpds")]
+            {
+                let rpds_vec: rpds::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("rpds_vector", size), &rpds_vec, |b, v| {
+                    b.iter(|| black_box(v.lc()))
+                });
+            }
         }
 
         group.finish();
@@ -443,38 +456,59 @@ mod im_benchmarks {
     ///
     /// This is the key benchmark for functional programming patterns where
     /// you clone a collection and then modify the clone.
-    ///
-    /// Expected:
-    /// - LcList: clone is O(1), push_back is O(log n) - total ~50ns
-    /// - Vec: clone is O(n), push is O(1) amortized - total dominated by clone
     pub fn bench_collection_clone_then_mutate(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
         let mut group = c.benchmark_group("collection__clone_then_mutate");
 
         for size in sizes {
-            let lc_list: LcList<i32> = (0..size as i32).collect();
+            // std::Vec (baseline)
             let vec: Vec<i32> = (0..size as i32).collect();
-
-            group.bench_with_input(
-                BenchmarkId::new("lc_list", size),
-                &lc_list,
-                |b, list| {
-                    b.iter(|| {
-                        let mut cloned = black_box(list).lc();
-                        cloned.push_back(999);
-                        black_box(cloned)
-                    })
-                },
-            );
-
-            group.bench_with_input(BenchmarkId::new("vec", size), &vec, |b, v| {
+            group.bench_with_input(BenchmarkId::new("std_vec", size), &vec, |b, v| {
                 b.iter(|| {
                     let mut cloned = black_box(v).clone();
                     cloned.push(999);
                     black_box(cloned)
                 })
             });
+
+            // im::Vector
+            #[cfg(feature = "im")]
+            {
+                let im_vec: im::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("im_vector", size), &im_vec, |b, v| {
+                    b.iter(|| {
+                        let mut cloned = black_box(v).lc();
+                        cloned.push_back(999);
+                        black_box(cloned)
+                    })
+                });
+            }
+
+            // imbl::Vector
+            #[cfg(feature = "imbl")]
+            {
+                let imbl_vec: imbl::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("imbl_vector", size), &imbl_vec, |b, v| {
+                    b.iter(|| {
+                        let mut cloned = black_box(v).lc();
+                        cloned.push_back(999);
+                        black_box(cloned)
+                    })
+                });
+            }
+
+            // rpds::Vector (note: rpds uses push_back_mut for mutation)
+            #[cfg(feature = "rpds")]
+            {
+                let rpds_vec: rpds::Vector<i32> = (0..size as i32).collect();
+                group.bench_with_input(BenchmarkId::new("rpds_vector", size), &rpds_vec, |b, v| {
+                    b.iter(|| {
+                        let cloned = black_box(v).lc().push_back(999);
+                        black_box(cloned)
+                    })
+                });
+            }
         }
 
         group.finish();
@@ -484,301 +518,126 @@ mod im_benchmarks {
     // Map benchmarks (clone and clone-then-mutate)
     // =========================================================================
 
-    /// Benchmark: Map clone - HashMap<i32, i32> vs LcMap<i32, i32>
-    ///
-    /// Expected:
-    /// - LcMap: constant ~11ns (structural sharing)
-    /// - HashMap: grows linearly with entry count
+    /// Benchmark: Map clone - comparing HashMap against persistent maps
     pub fn bench_map_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
         let mut group = c.benchmark_group("map__clone");
 
         for size in sizes {
-            let lc_map: ImHashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            // std::HashMap (baseline)
             let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            group.bench_with_input(
+                BenchmarkId::new("std_hashmap", size),
+                &hash_map,
+                |b, map| b.iter(|| black_box(map.clone())),
+            );
 
-            group.bench_with_input(BenchmarkId::new("lc_map", size), &lc_map, |b, map| {
-                b.iter(|| black_box(map.lc()))
-            });
+            // im::HashMap
+            #[cfg(feature = "im")]
+            {
+                let im_map: im::HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(BenchmarkId::new("im_hashmap", size), &im_map, |b, map| {
+                    b.iter(|| black_box(map.lc()))
+                });
+            }
 
-            group.bench_with_input(BenchmarkId::new("hashmap", size), &hash_map, |b, map| {
-                b.iter(|| black_box(map.clone()))
-            });
+            // imbl::HashMap
+            #[cfg(feature = "imbl")]
+            {
+                let imbl_map: imbl::HashMap<i32, i32> =
+                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(
+                    BenchmarkId::new("imbl_hashmap", size),
+                    &imbl_map,
+                    |b, map| b.iter(|| black_box(map.lc())),
+                );
+            }
+
+            // rpds::HashTrieMap
+            #[cfg(feature = "rpds")]
+            {
+                let rpds_map: rpds::HashTrieMap<i32, i32> =
+                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(
+                    BenchmarkId::new("rpds_hashtriemap", size),
+                    &rpds_map,
+                    |b, map| b.iter(|| black_box(map.lc())),
+                );
+            }
         }
 
         group.finish();
     }
 
     /// Benchmark: Map clone-then-mutate pattern
-    ///
-    /// Expected:
-    /// - LcMap: clone is O(1), insert is O(log n) - total ~50ns
-    /// - HashMap: clone is O(n), insert is O(1) amortized - total dominated by clone
     pub fn bench_map_clone_then_mutate(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
         let mut group = c.benchmark_group("map__clone_then_mutate");
 
         for size in sizes {
-            let lc_map: ImHashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            // std::HashMap (baseline)
             let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
-
-            group.bench_with_input(BenchmarkId::new("lc_map", size), &lc_map, |b, map| {
-                b.iter(|| {
-                    let mut cloned = black_box(map).lc();
-                    cloned.insert(99999, 99999);
-                    black_box(cloned)
-                })
-            });
-
-            group.bench_with_input(BenchmarkId::new("hashmap", size), &hash_map, |b, map| {
-                b.iter(|| {
-                    let mut cloned = black_box(map).clone();
-                    cloned.insert(99999, 99999);
-                    black_box(cloned)
-                })
-            });
-        }
-
-        group.finish();
-    }
-
-    // =========================================================================
-    // Struct with collection benchmarks (clone and clone-then-mutate)
-    // =========================================================================
-
-    /// A user struct with a Vec of orders (deep clone).
-    #[derive(Clone)]
-    #[allow(dead_code)]
-    struct UserWithVec {
-        id: u64,
-        name: String,
-        orders: Vec<String>,
-    }
-
-    impl UserWithVec {
-        fn new(order_count: usize) -> Self {
-            Self {
-                id: 12345,
-                name: "Alice".to_string(),
-                orders: (0..order_count)
-                    .map(|i| format!("order-{i:05}"))
-                    .collect(),
-            }
-        }
-    }
-
-    /// A user struct with an LcList of orders (light clone).
-    #[derive(LcClone)]
-    #[allow(dead_code)]
-    struct UserWithLcList {
-        id: u64,
-        name: LcStr,
-        orders: LcList<LcStr>,
-    }
-
-    impl UserWithLcList {
-        fn new(order_count: usize) -> Self {
-            Self {
-                id: 12345,
-                name: Arc::from("Alice"),
-                orders: (0..order_count)
-                    .map(|i| Arc::from(format!("order-{i:05}").as_str()))
-                    .collect(),
-            }
-        }
-    }
-
-    /// Benchmark: Struct with collection clone
-    ///
-    /// Expected:
-    /// - UserWithLcList: constant ~22ns (2 refcount bumps + 1 u64 copy)
-    /// - UserWithVec: grows linearly with order count
-    pub fn bench_struct_with_collection_clone(c: &mut Criterion) {
-        let sizes = [10, 100, 1_000, 10_000];
-
-        let mut group = c.benchmark_group("struct_with_collection__clone");
-
-        for size in sizes {
-            let lc_user = UserWithLcList::new(size);
-            let vec_user = UserWithVec::new(size);
-
             group.bench_with_input(
-                BenchmarkId::new("lc_struct", size),
-                &lc_user,
-                |b, user| b.iter(|| black_box(user.lc())),
-            );
-
-            group.bench_with_input(
-                BenchmarkId::new("std_struct", size),
-                &vec_user,
-                |b, user| b.iter(|| black_box(user.clone())),
-            );
-        }
-
-        group.finish();
-    }
-
-    /// Benchmark: Struct with collection clone-then-mutate
-    ///
-    /// This shows the real-world pattern of cloning a struct and adding to its collection.
-    ///
-    /// Expected:
-    /// - LcStruct: clone O(1) + push O(log n) - constant-ish
-    /// - StdStruct: clone O(n) + push O(1) - dominated by clone
-    pub fn bench_struct_with_collection_clone_then_mutate(c: &mut Criterion) {
-        let sizes = [10, 100, 1_000, 10_000];
-
-        let mut group = c.benchmark_group("struct_with_collection__clone_then_mutate");
-
-        for size in sizes {
-            let lc_user = UserWithLcList::new(size);
-            let vec_user = UserWithVec::new(size);
-            let new_order: LcStr = Arc::from("order-99999");
-
-            group.bench_with_input(
-                BenchmarkId::new("lc_struct", size),
-                &(&lc_user, &new_order),
-                |b, (user, order)| {
+                BenchmarkId::new("std_hashmap", size),
+                &hash_map,
+                |b, map| {
                     b.iter(|| {
-                        let mut cloned = black_box(*user).lc();
-                        cloned.orders.push_back((*order).lc());
+                        let mut cloned = black_box(map).clone();
+                        cloned.insert(99999, 99999);
                         black_box(cloned)
                     })
                 },
             );
 
-            group.bench_with_input(
-                BenchmarkId::new("std_struct", size),
-                &vec_user,
-                |b, user| {
+            // im::HashMap
+            #[cfg(feature = "im")]
+            {
+                let im_map: im::HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(BenchmarkId::new("im_hashmap", size), &im_map, |b, map| {
                     b.iter(|| {
-                        let mut cloned = black_box(user).clone();
-                        cloned.orders.push("order-99999".to_string());
+                        let mut cloned = black_box(map).lc();
+                        cloned.insert(99999, 99999);
                         black_box(cloned)
                     })
-                },
-            );
-        }
-
-        group.finish();
-    }
-
-    // =========================================================================
-    // Struct with map benchmarks (clone and clone-then-mutate)
-    // =========================================================================
-
-    /// A cache struct with a HashMap (deep clone).
-    #[derive(Clone)]
-    #[allow(dead_code)]
-    struct CacheWithHashMap {
-        entries: HashMap<String, String>,
-    }
-
-    impl CacheWithHashMap {
-        fn new(entry_count: usize) -> Self {
-            Self {
-                entries: (0..entry_count)
-                    .map(|i| (format!("key-{i:05}"), format!("value-{i:05}")))
-                    .collect(),
+                });
             }
-        }
-    }
 
-    /// A cache struct with an LcMap (light clone).
-    #[derive(LcClone)]
-    #[allow(dead_code)]
-    struct CacheWithLcMap {
-        entries: LcMap<LcStr, LcStr>,
-    }
-
-    impl CacheWithLcMap {
-        fn new(entry_count: usize) -> Self {
-            Self {
-                entries: (0..entry_count)
-                    .map(|i| {
-                        (
-                            Arc::from(format!("key-{i:05}").as_str()),
-                            Arc::from(format!("value-{i:05}").as_str()),
-                        )
-                    })
-                    .collect(),
+            // imbl::HashMap
+            #[cfg(feature = "imbl")]
+            {
+                let imbl_map: imbl::HashMap<i32, i32> =
+                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(
+                    BenchmarkId::new("imbl_hashmap", size),
+                    &imbl_map,
+                    |b, map| {
+                        b.iter(|| {
+                            let mut cloned = black_box(map).lc();
+                            cloned.insert(99999, 99999);
+                            black_box(cloned)
+                        })
+                    },
+                );
             }
-        }
-    }
 
-    /// Benchmark: Struct with map clone
-    ///
-    /// Expected:
-    /// - CacheWithLcMap: constant ~11ns (1 refcount bump)
-    /// - CacheWithHashMap: grows linearly with entry count
-    pub fn bench_struct_with_map_clone(c: &mut Criterion) {
-        let sizes = [10, 100, 1_000, 10_000];
-
-        let mut group = c.benchmark_group("struct_with_map__clone");
-
-        for size in sizes {
-            let lc_cache = CacheWithLcMap::new(size);
-            let hash_cache = CacheWithHashMap::new(size);
-
-            group.bench_with_input(
-                BenchmarkId::new("lc_struct", size),
-                &lc_cache,
-                |b, cache| b.iter(|| black_box(cache.lc())),
-            );
-
-            group.bench_with_input(
-                BenchmarkId::new("std_struct", size),
-                &hash_cache,
-                |b, cache| b.iter(|| black_box(cache.clone())),
-            );
-        }
-
-        group.finish();
-    }
-
-    /// Benchmark: Struct with map clone-then-mutate
-    ///
-    /// Expected:
-    /// - LcStruct: clone O(1) + insert O(log n) - constant-ish
-    /// - StdStruct: clone O(n) + insert O(1) - dominated by clone
-    pub fn bench_struct_with_map_clone_then_mutate(c: &mut Criterion) {
-        let sizes = [10, 100, 1_000, 10_000];
-
-        let mut group = c.benchmark_group("struct_with_map__clone_then_mutate");
-
-        for size in sizes {
-            let lc_cache = CacheWithLcMap::new(size);
-            let hash_cache = CacheWithHashMap::new(size);
-            let new_key: LcStr = Arc::from("key-99999");
-            let new_value: LcStr = Arc::from("value-99999");
-
-            group.bench_with_input(
-                BenchmarkId::new("lc_struct", size),
-                &(&lc_cache, &new_key, &new_value),
-                |b, (cache, key, value)| {
-                    b.iter(|| {
-                        let mut cloned = black_box(*cache).lc();
-                        cloned.entries.insert((*key).lc(), (*value).lc());
-                        black_box(cloned)
-                    })
-                },
-            );
-
-            group.bench_with_input(
-                BenchmarkId::new("std_struct", size),
-                &hash_cache,
-                |b, cache| {
-                    b.iter(|| {
-                        let mut cloned = black_box(cache).clone();
-                        cloned
-                            .entries
-                            .insert("key-99999".to_string(), "value-99999".to_string());
-                        black_box(cloned)
-                    })
-                },
-            );
+            // rpds::HashTrieMap (note: rpds uses insert for persistent update)
+            #[cfg(feature = "rpds")]
+            {
+                let rpds_map: rpds::HashTrieMap<i32, i32> =
+                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                group.bench_with_input(
+                    BenchmarkId::new("rpds_hashtriemap", size),
+                    &rpds_map,
+                    |b, map| {
+                        b.iter(|| {
+                            let cloned = black_box(map).lc().insert(99999, 99999);
+                            black_box(cloned)
+                        })
+                    },
+                );
+            }
         }
 
         group.finish();
@@ -786,10 +645,10 @@ mod im_benchmarks {
 }
 
 // =============================================================================
-// Criterion setup - conditionally include im benchmarks
+// Criterion setup - conditionally include persistent collection benchmarks
 // =============================================================================
 
-#[cfg(not(feature = "im"))]
+#[cfg(not(any(feature = "im", feature = "imbl", feature = "rpds")))]
 criterion_group!(
     benches,
     bench_arc_str,
@@ -801,7 +660,7 @@ criterion_group!(
     bench_arc_lc_vs_clone,
 );
 
-#[cfg(feature = "im")]
+#[cfg(any(feature = "im", feature = "imbl", feature = "rpds"))]
 criterion_group!(
     benches,
     bench_arc_str,
@@ -811,19 +670,12 @@ criterion_group!(
     bench_nested_structs,
     bench_string_sizes,
     bench_arc_lc_vs_clone,
-    im_benchmarks::bench_im_vector,
-    // Collection benchmarks
-    im_benchmarks::bench_collection_clone,
-    im_benchmarks::bench_collection_clone_then_mutate,
-    // Map benchmarks
-    im_benchmarks::bench_map_clone,
-    im_benchmarks::bench_map_clone_then_mutate,
-    // Struct with collection benchmarks
-    im_benchmarks::bench_struct_with_collection_clone,
-    im_benchmarks::bench_struct_with_collection_clone_then_mutate,
-    // Struct with map benchmarks
-    im_benchmarks::bench_struct_with_map_clone,
-    im_benchmarks::bench_struct_with_map_clone_then_mutate,
+    // Collection benchmarks (comparing im, imbl, rpds, std)
+    persistent_benchmarks::bench_collection_clone,
+    persistent_benchmarks::bench_collection_clone_then_mutate,
+    // Map benchmarks (comparing im, imbl, rpds, std)
+    persistent_benchmarks::bench_map_clone,
+    persistent_benchmarks::bench_map_clone_then_mutate,
 );
 
 criterion_main!(benches);

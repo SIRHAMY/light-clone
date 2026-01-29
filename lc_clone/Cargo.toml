@@ -8,13 +8,15 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 lc_clone_derive = { path = "../lc_clone_derive" }
 im = { version = "15", optional = true }
+imbl = { version = "3", optional = true }
 rpds = { version = "1", optional = true }
 
 [features]
 default = []
 im = ["dep:im"]
+imbl = ["dep:imbl"]
 rpds = ["dep:rpds"]
-full = ["im", "rpds"]
+full = ["im", "imbl", "rpds"]
 
 [dev-dependencies]
 trybuild = "1"
