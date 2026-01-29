@@ -1,5 +1,0 @@
-error: LightClone derive is not yet supported for enums. Consider wrapping in Arc.
- --> tests/ui/enum_not_supported.rs:4:6
-  |
-4 | enum MyEnum {
-  |      ^^^^^^

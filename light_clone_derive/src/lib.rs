@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput, Fields, Index};
 
 /// Derive macro for `LightClone` trait.
@@ -64,13 +64,56 @@ fn derive_light_clone_impl(input: TokenStream) -> TokenStream {
                 }
             }
         }
-        Data::Enum(_) => {
-            return syn::Error::new_spanned(
-                &input.ident,
-                "LightClone derive is not yet supported for enums. Consider wrapping in Arc.",
-            )
-            .to_compile_error()
-            .into();
+        Data::Enum(data_enum) => {
+            let match_arms = data_enum.variants.iter().map(|variant| {
+                let variant_ident = &variant.ident;
+
+                match &variant.fields {
+                    Fields::Unit => {
+                        quote! { Self::#variant_ident => Self::#variant_ident }
+                    }
+                    Fields::Unnamed(fields) => {
+                        let bindings: Vec<_> = (0..fields.unnamed.len())
+                            .map(|i| format_ident!("__field_{}", i))
+                            .collect();
+                        let clones = bindings.iter().map(|b| {
+                            quote! { light_clone::LightClone::light_clone(#b) }
+                        });
+                        quote! {
+                            Self::#variant_ident(#(#bindings),*) => Self::#variant_ident(#(#clones),*)
+                        }
+                    }
+                    Fields::Named(fields) => {
+                        let field_names: Vec<_> = fields
+                            .named
+                            .iter()
+                            .map(|f| f.ident.as_ref().unwrap())
+                            .collect();
+                        let field_clones = field_names.iter().map(|name| {
+                            quote! { #name: light_clone::LightClone::light_clone(#name) }
+                        });
+                        quote! {
+                            Self::#variant_ident { #(#field_names),* } => Self::#variant_ident { #(#field_clones),* }
+                        }
+                    }
+                }
+            });
+
+            quote! {
+                impl #impl_generics light_clone::LightClone for #name #ty_generics #where_clause {
+                    fn light_clone(&self) -> Self {
+                        match self {
+                            #(#match_arms),*
+                        }
+                    }
+                }
+
+                impl #impl_generics Clone for #name #ty_generics #where_clause {
+                    fn clone(&self) -> Self {
+                        light_clone::LightClone::light_clone(self)
+                    }
+                }
+            }
         }
         Data::Union(_) => {
             return syn::Error::new_spanned(
