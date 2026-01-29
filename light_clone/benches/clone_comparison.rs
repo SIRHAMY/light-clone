@@ -381,7 +381,9 @@ fn bench_arc_lc_vs_clone(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("arc_lc_vs_clone");
 
-    group.bench_function("arc.light_clone()", |b| b.iter(|| black_box(&arc).light_clone()));
+    group.bench_function("arc.light_clone()", |b| {
+        b.iter(|| black_box(&arc).light_clone())
+    });
     group.bench_function("arc.clone()", |b| b.iter(|| black_box(&arc).clone()));
 
     group.finish();

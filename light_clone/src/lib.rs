@@ -17,8 +17,8 @@ pub use conversions::IntoLightStr;
 
 // Legacy aliases for backwards compatibility
 #[doc(hidden)]
-pub use trait_def::LightClone as LcClone;
-#[doc(hidden)]
 pub use aliases::LightStr as LcStr;
 #[doc(hidden)]
 pub use conversions::IntoLightStr as IntoLcStr;
+#[doc(hidden)]
+pub use trait_def::LightClone as LcClone;
