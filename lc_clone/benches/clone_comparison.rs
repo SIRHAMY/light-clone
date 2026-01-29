@@ -4,41 +4,55 @@
 //! 1. `.lc()` on Arc-based types has identical performance to `.clone()`
 //! 2. LcClone structs are significantly faster to clone than deep-clone equivalents
 //! 3. Performance scales with data size for deep clones but remains constant for light clones
+//! 4. Clone-then-mutate patterns heavily favor persistent data structures
 //!
 //! # Running Benchmarks
 //!
 //! ```sh
-//! cargo bench -p lc_clone
-//! cargo bench -p lc_clone --features im
+//! cargo bench -p lc_clone              # Core benchmarks only
+//! cargo bench -p lc_clone --all-features  # Include collection benchmarks
 //! ```
 //!
+//! # Benchmark Organization
+//!
+//! Benchmarks are organized by what they test:
+//!
+//! - `arc_*` - Arc overhead verification
+//! - `collection__*` - Raw collection clone/mutate (Vec vs LcList)
+//! - `map__*` - Raw map clone/mutate (HashMap vs LcMap)
+//! - `struct_with_collection__*` - Structs containing collections
+//! - `struct_with_map__*` - Structs containing maps
+//!
+//! Each category has two variants:
+//! - `__clone` - Pure clone performance
+//! - `__clone_then_mutate` - Clone followed by a mutation (common functional pattern)
+//!
 //! # Expected Results Summary
+//!
+//! ## Core Benchmarks (no features required)
 //!
 //! | Benchmark | Arc/LcClone | String/Clone | Notes |
 //! |-----------|-------------|--------------|-------|
 //! | `arc_str` | ~11ns | ~11ns | Identical - both are refcount bump |
 //! | `arc_large_struct` | ~11ns | ~11ns | Size doesn't matter for Arc clone |
-//! | `five_arc_fields` | ~41ns | ~41ns | 5 refcount bumps |
-//! | `lc_vs_string_fields/10` | ~41ns | ~47ns | Small strings similar |
-//! | `lc_vs_string_fields/10000` | ~41ns | ~230ns | LcClone 5.6x faster |
-//! | `nested_structs/10` | ~26ns | ~36ns | Slight advantage |
-//! | `nested_structs/10000` | ~26ns | ~509ns | LcClone 19.5x faster |
-//! | `string_size/10` | ~11ns | ~9ns | Very small strings favor heap alloc |
-//! | `string_size/10000` | ~11ns | ~85ns | LcClone 7.7x faster at scale |
 //! | `arc_lc_vs_clone` | ~11ns | ~11ns | Proves .lc() == .clone() for Arc |
+//! | `five_arc_fields` | ~41ns | ~41ns | 5 refcount bumps |
+//! | `lc_vs_string_fields/10000` | ~41ns | ~230ns | LcClone 5.6x faster |
+//! | `nested_structs/10000` | ~26ns | ~509ns | LcClone 19.5x faster |
 //!
-//! With `im` feature enabled:
+//! ## Collection Benchmarks (requires `im` feature)
 //!
-//! | Benchmark | LcClone | Deep Clone | Notes |
-//! |-----------|---------|------------|-------|
-//! | `im_vector` | ~11ns | ~11ns | Both O(1) structural sharing |
-//! | `struct_with_collection/100` | ~22ns | ~250ns | LcList 11x faster |
-//! | `struct_with_collection/10000` | ~22ns | ~25µs | LcList 1000x+ faster |
-//! | `struct_with_map/100` | ~22ns | ~2.5µs | LcMap 100x+ faster |
-//! | `collection_sizes/10000` | ~11ns | ~25µs | Vec grows linearly |
+//! | Benchmark | LcClone | Std Clone | Notes |
+//! |-----------|---------|-----------|-------|
+//! | `collection__clone/10000` | ~11ns | ~25µs | 2000x+ faster |
+//! | `collection__clone_then_mutate/10000` | ~50ns | ~25µs | 500x+ faster |
+//! | `map__clone/10000` | ~11ns | ~100µs | 10000x+ faster |
+//! | `map__clone_then_mutate/10000` | ~80ns | ~100µs | 1000x+ faster |
+//! | `struct_with_collection__clone/10000` | ~22ns | ~3µs | 100x+ faster |
+//! | `struct_with_map__clone/10000` | ~11ns | ~250µs | 20000x+ faster |
 //!
 //! Key insight: LcClone performance is **constant** regardless of data size,
-//! while String clone grows **linearly** with size.
+//! while std collections grow **linearly** with size.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use lc_clone::LcClone;
@@ -394,11 +408,147 @@ mod im_benchmarks {
     }
 
     // =========================================================================
-    // Structs with collections
+    // Collection benchmarks (clone and clone-then-mutate)
+    // =========================================================================
+
+    /// Benchmark: Collection clone - Vec<i32> vs LcList<i32>
+    ///
+    /// Expected:
+    /// - LcList: constant ~11ns (structural sharing)
+    /// - Vec: grows linearly with size
+    pub fn bench_collection_clone(c: &mut Criterion) {
+        let sizes = [10, 100, 1_000, 10_000];
+
+        let mut group = c.benchmark_group("collection__clone");
+
+        for size in sizes {
+            let lc_list: LcList<i32> = (0..size as i32).collect();
+            let vec: Vec<i32> = (0..size as i32).collect();
+
+            group.bench_with_input(
+                BenchmarkId::new("lc_list", size),
+                &lc_list,
+                |b, list| b.iter(|| black_box(list.lc())),
+            );
+
+            group.bench_with_input(BenchmarkId::new("vec", size), &vec, |b, v| {
+                b.iter(|| black_box(v.clone()))
+            });
+        }
+
+        group.finish();
+    }
+
+    /// Benchmark: Collection clone-then-mutate pattern
+    ///
+    /// This is the key benchmark for functional programming patterns where
+    /// you clone a collection and then modify the clone.
+    ///
+    /// Expected:
+    /// - LcList: clone is O(1), push_back is O(log n) - total ~50ns
+    /// - Vec: clone is O(n), push is O(1) amortized - total dominated by clone
+    pub fn bench_collection_clone_then_mutate(c: &mut Criterion) {
+        let sizes = [10, 100, 1_000, 10_000];
+
+        let mut group = c.benchmark_group("collection__clone_then_mutate");
+
+        for size in sizes {
+            let lc_list: LcList<i32> = (0..size as i32).collect();
+            let vec: Vec<i32> = (0..size as i32).collect();
+
+            group.bench_with_input(
+                BenchmarkId::new("lc_list", size),
+                &lc_list,
+                |b, list| {
+                    b.iter(|| {
+                        let mut cloned = black_box(list).lc();
+                        cloned.push_back(999);
+                        black_box(cloned)
+                    })
+                },
+            );
+
+            group.bench_with_input(BenchmarkId::new("vec", size), &vec, |b, v| {
+                b.iter(|| {
+                    let mut cloned = black_box(v).clone();
+                    cloned.push(999);
+                    black_box(cloned)
+                })
+            });
+        }
+
+        group.finish();
+    }
+
+    // =========================================================================
+    // Map benchmarks (clone and clone-then-mutate)
+    // =========================================================================
+
+    /// Benchmark: Map clone - HashMap<i32, i32> vs LcMap<i32, i32>
+    ///
+    /// Expected:
+    /// - LcMap: constant ~11ns (structural sharing)
+    /// - HashMap: grows linearly with entry count
+    pub fn bench_map_clone(c: &mut Criterion) {
+        let sizes = [10, 100, 1_000, 10_000];
+
+        let mut group = c.benchmark_group("map__clone");
+
+        for size in sizes {
+            let lc_map: ImHashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+
+            group.bench_with_input(BenchmarkId::new("lc_map", size), &lc_map, |b, map| {
+                b.iter(|| black_box(map.lc()))
+            });
+
+            group.bench_with_input(BenchmarkId::new("hashmap", size), &hash_map, |b, map| {
+                b.iter(|| black_box(map.clone()))
+            });
+        }
+
+        group.finish();
+    }
+
+    /// Benchmark: Map clone-then-mutate pattern
+    ///
+    /// Expected:
+    /// - LcMap: clone is O(1), insert is O(log n) - total ~50ns
+    /// - HashMap: clone is O(n), insert is O(1) amortized - total dominated by clone
+    pub fn bench_map_clone_then_mutate(c: &mut Criterion) {
+        let sizes = [10, 100, 1_000, 10_000];
+
+        let mut group = c.benchmark_group("map__clone_then_mutate");
+
+        for size in sizes {
+            let lc_map: ImHashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+
+            group.bench_with_input(BenchmarkId::new("lc_map", size), &lc_map, |b, map| {
+                b.iter(|| {
+                    let mut cloned = black_box(map).lc();
+                    cloned.insert(99999, 99999);
+                    black_box(cloned)
+                })
+            });
+
+            group.bench_with_input(BenchmarkId::new("hashmap", size), &hash_map, |b, map| {
+                b.iter(|| {
+                    let mut cloned = black_box(map).clone();
+                    cloned.insert(99999, 99999);
+                    black_box(cloned)
+                })
+            });
+        }
+
+        group.finish();
+    }
+
+    // =========================================================================
+    // Struct with collection benchmarks (clone and clone-then-mutate)
     // =========================================================================
 
     /// A user struct with a Vec of orders (deep clone).
-    /// Clone cost: O(n) - must copy all elements.
     #[derive(Clone)]
     #[allow(dead_code)]
     struct UserWithVec {
@@ -420,7 +570,6 @@ mod im_benchmarks {
     }
 
     /// A user struct with an LcList of orders (light clone).
-    /// Clone cost: O(1) - structural sharing, just bumps refcounts.
     #[derive(LcClone)]
     #[allow(dead_code)]
     struct UserWithLcList {
@@ -441,30 +590,28 @@ mod im_benchmarks {
         }
     }
 
-    /// Benchmark: Struct containing Vec<String> vs LcList<LcStr>
+    /// Benchmark: Struct with collection clone
     ///
     /// Expected:
-    /// - UserWithLcList.lc(): constant ~22ns (2 refcount bumps + 1 u64 copy)
-    /// - UserWithVec.clone(): grows linearly with order count
-    ///   - 100 orders: ~250ns
-    ///   - 10000 orders: ~25µs
-    pub fn bench_struct_with_collection(c: &mut Criterion) {
+    /// - UserWithLcList: constant ~22ns (2 refcount bumps + 1 u64 copy)
+    /// - UserWithVec: grows linearly with order count
+    pub fn bench_struct_with_collection_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("struct_with_collection");
+        let mut group = c.benchmark_group("struct_with_collection__clone");
 
         for size in sizes {
             let lc_user = UserWithLcList::new(size);
             let vec_user = UserWithVec::new(size);
 
             group.bench_with_input(
-                BenchmarkId::new("lc_list_lc", size),
+                BenchmarkId::new("lc_struct", size),
                 &lc_user,
                 |b, user| b.iter(|| black_box(user.lc())),
             );
 
             group.bench_with_input(
-                BenchmarkId::new("vec_clone", size),
+                BenchmarkId::new("std_struct", size),
                 &vec_user,
                 |b, user| b.iter(|| black_box(user.clone())),
             );
@@ -473,8 +620,56 @@ mod im_benchmarks {
         group.finish();
     }
 
+    /// Benchmark: Struct with collection clone-then-mutate
+    ///
+    /// This shows the real-world pattern of cloning a struct and adding to its collection.
+    ///
+    /// Expected:
+    /// - LcStruct: clone O(1) + push O(log n) - constant-ish
+    /// - StdStruct: clone O(n) + push O(1) - dominated by clone
+    pub fn bench_struct_with_collection_clone_then_mutate(c: &mut Criterion) {
+        let sizes = [10, 100, 1_000, 10_000];
+
+        let mut group = c.benchmark_group("struct_with_collection__clone_then_mutate");
+
+        for size in sizes {
+            let lc_user = UserWithLcList::new(size);
+            let vec_user = UserWithVec::new(size);
+            let new_order: LcStr = Arc::from("order-99999");
+
+            group.bench_with_input(
+                BenchmarkId::new("lc_struct", size),
+                &(&lc_user, &new_order),
+                |b, (user, order)| {
+                    b.iter(|| {
+                        let mut cloned = black_box(*user).lc();
+                        cloned.orders.push_back((*order).lc());
+                        black_box(cloned)
+                    })
+                },
+            );
+
+            group.bench_with_input(
+                BenchmarkId::new("std_struct", size),
+                &vec_user,
+                |b, user| {
+                    b.iter(|| {
+                        let mut cloned = black_box(user).clone();
+                        cloned.orders.push("order-99999".to_string());
+                        black_box(cloned)
+                    })
+                },
+            );
+        }
+
+        group.finish();
+    }
+
+    // =========================================================================
+    // Struct with map benchmarks (clone and clone-then-mutate)
+    // =========================================================================
+
     /// A cache struct with a HashMap (deep clone).
-    /// Clone cost: O(n) - must copy all key-value pairs.
     #[derive(Clone)]
     #[allow(dead_code)]
     struct CacheWithHashMap {
@@ -492,7 +687,6 @@ mod im_benchmarks {
     }
 
     /// A cache struct with an LcMap (light clone).
-    /// Clone cost: O(1) - structural sharing.
     #[derive(LcClone)]
     #[allow(dead_code)]
     struct CacheWithLcMap {
@@ -514,30 +708,28 @@ mod im_benchmarks {
         }
     }
 
-    /// Benchmark: Struct containing HashMap<String, String> vs LcMap<LcStr, LcStr>
+    /// Benchmark: Struct with map clone
     ///
     /// Expected:
-    /// - CacheWithLcMap.lc(): constant ~11ns (1 refcount bump)
-    /// - CacheWithHashMap.clone(): grows linearly with entry count
-    ///   - 100 entries: ~2.5µs
-    ///   - 10000 entries: ~250µs
-    pub fn bench_struct_with_map(c: &mut Criterion) {
+    /// - CacheWithLcMap: constant ~11ns (1 refcount bump)
+    /// - CacheWithHashMap: grows linearly with entry count
+    pub fn bench_struct_with_map_clone(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("struct_with_map");
+        let mut group = c.benchmark_group("struct_with_map__clone");
 
         for size in sizes {
             let lc_cache = CacheWithLcMap::new(size);
             let hash_cache = CacheWithHashMap::new(size);
 
             group.bench_with_input(
-                BenchmarkId::new("lc_map_lc", size),
+                BenchmarkId::new("lc_struct", size),
                 &lc_cache,
                 |b, cache| b.iter(|| black_box(cache.lc())),
             );
 
             group.bench_with_input(
-                BenchmarkId::new("hashmap_clone", size),
+                BenchmarkId::new("std_struct", size),
                 &hash_cache,
                 |b, cache| b.iter(|| black_box(cache.clone())),
             );
@@ -546,63 +738,46 @@ mod im_benchmarks {
         group.finish();
     }
 
-    /// Benchmark: Collection size scaling for Vec<i32> vs LcList<i32>
-    ///
-    /// This benchmark isolates the collection cloning behavior without
-    /// struct overhead, demonstrating how clone cost scales with size.
+    /// Benchmark: Struct with map clone-then-mutate
     ///
     /// Expected:
-    /// - LcList<i32>.lc(): constant ~11ns at all sizes
-    /// - Vec<i32>.clone(): grows linearly
-    ///   - 10 elements: ~40ns
-    ///   - 10000 elements: ~25µs
-    pub fn bench_collection_sizes(c: &mut Criterion) {
+    /// - LcStruct: clone O(1) + insert O(log n) - constant-ish
+    /// - StdStruct: clone O(n) + insert O(1) - dominated by clone
+    pub fn bench_struct_with_map_clone_then_mutate(c: &mut Criterion) {
         let sizes = [10, 100, 1_000, 10_000];
 
-        let mut group = c.benchmark_group("collection_size_scaling");
+        let mut group = c.benchmark_group("struct_with_map__clone_then_mutate");
 
         for size in sizes {
-            let lc_list: LcList<i32> = (0..size as i32).collect();
-            let vec: Vec<i32> = (0..size as i32).collect();
+            let lc_cache = CacheWithLcMap::new(size);
+            let hash_cache = CacheWithHashMap::new(size);
+            let new_key: LcStr = Arc::from("key-99999");
+            let new_value: LcStr = Arc::from("value-99999");
 
             group.bench_with_input(
-                BenchmarkId::new("lc_list_lc", size),
-                &lc_list,
-                |b, list| b.iter(|| black_box(list.lc())),
+                BenchmarkId::new("lc_struct", size),
+                &(&lc_cache, &new_key, &new_value),
+                |b, (cache, key, value)| {
+                    b.iter(|| {
+                        let mut cloned = black_box(*cache).lc();
+                        cloned.entries.insert((*key).lc(), (*value).lc());
+                        black_box(cloned)
+                    })
+                },
             );
 
-            group.bench_with_input(BenchmarkId::new("vec_clone", size), &vec, |b, v| {
-                b.iter(|| black_box(v.clone()))
-            });
-        }
-
-        group.finish();
-    }
-
-    /// Benchmark: Map size scaling for HashMap<i32, i32> vs LcMap<i32, i32>
-    ///
-    /// This benchmark isolates the map cloning behavior without struct overhead.
-    ///
-    /// Expected:
-    /// - LcMap<i32, i32>.lc(): constant ~11ns at all sizes
-    /// - HashMap<i32, i32>.clone(): grows linearly with entry count
-    pub fn bench_map_sizes(c: &mut Criterion) {
-        let sizes = [10, 100, 1_000, 10_000];
-
-        let mut group = c.benchmark_group("map_size_scaling");
-
-        for size in sizes {
-            let lc_map: ImHashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
-            let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
-
-            group.bench_with_input(BenchmarkId::new("lc_map_lc", size), &lc_map, |b, map| {
-                b.iter(|| black_box(map.lc()))
-            });
-
             group.bench_with_input(
-                BenchmarkId::new("hashmap_clone", size),
-                &hash_map,
-                |b, map| b.iter(|| black_box(map.clone())),
+                BenchmarkId::new("std_struct", size),
+                &hash_cache,
+                |b, cache| {
+                    b.iter(|| {
+                        let mut cloned = black_box(cache).clone();
+                        cloned
+                            .entries
+                            .insert("key-99999".to_string(), "value-99999".to_string());
+                        black_box(cloned)
+                    })
+                },
             );
         }
 
@@ -637,10 +812,18 @@ criterion_group!(
     bench_string_sizes,
     bench_arc_lc_vs_clone,
     im_benchmarks::bench_im_vector,
-    im_benchmarks::bench_struct_with_collection,
-    im_benchmarks::bench_struct_with_map,
-    im_benchmarks::bench_collection_sizes,
-    im_benchmarks::bench_map_sizes,
+    // Collection benchmarks
+    im_benchmarks::bench_collection_clone,
+    im_benchmarks::bench_collection_clone_then_mutate,
+    // Map benchmarks
+    im_benchmarks::bench_map_clone,
+    im_benchmarks::bench_map_clone_then_mutate,
+    // Struct with collection benchmarks
+    im_benchmarks::bench_struct_with_collection_clone,
+    im_benchmarks::bench_struct_with_collection_clone_then_mutate,
+    // Struct with map benchmarks
+    im_benchmarks::bench_struct_with_map_clone,
+    im_benchmarks::bench_struct_with_map_clone_then_mutate,
 );
 
 criterion_main!(benches);
