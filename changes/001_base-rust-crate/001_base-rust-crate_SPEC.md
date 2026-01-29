@@ -186,22 +186,22 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Implement `LcClone for ()` (unit type)
-- [ ] Implement `LcClone for PhantomData<T>` (no bound on T needed)
-- [ ] Implement `LcClone for Option<T>` where `T: LcClone`
-- [ ] Implement `LcClone for Result<T, E>` where `T: LcClone, E: Clone` (per PRD: errors just need Clone)
-- [ ] Create macro for tuple implementations
-- [ ] Implement for tuples (A,), (A, B), ... up to 12 elements, all requiring LcClone bounds
-- [ ] Write tests for `Option<Arc<str>>`, `Option<i32>`, `None` case
-- [ ] Write tests for `Result<Arc<str>, String>`, `Ok` and `Err` cases
-- [ ] Write tests for tuples: `(i32,)`, `(i32, Arc<str>)`, 12-element tuple
-- [ ] Write test for `PhantomData<String>` (should work even though String isn't LcClone)
+- [x] Implement `LcClone for ()` (unit type)
+- [x] Implement `LcClone for PhantomData<T>` (no bound on T needed)
+- [x] Implement `LcClone for Option<T>` where `T: LcClone`
+- [x] Implement `LcClone for Result<T, E>` where `T: LcClone, E: Clone` (per PRD: errors just need Clone)
+- [x] Create macro for tuple implementations
+- [x] Implement for tuples (A,), (A, B), ... up to 12 elements, all requiring LcClone bounds
+- [x] Write tests for `Option<Arc<str>>`, `Option<i32>`, `None` case
+- [x] Write tests for `Result<Arc<str>, String>`, `Ok` and `Err` cases
+- [x] Write tests for tuples: `(i32,)`, `(i32, Arc<str>)`, 12-element tuple
+- [x] Write test for `PhantomData<String>` (should work even though String isn't LcClone)
 
 **Verification:**
 
-- [ ] All container types implement LcClone with correct bounds
-- [ ] Tests pass: `cargo test -p lc_clone`
-- [ ] Code review passes
+- [x] All container types implement LcClone with correct bounds
+- [x] Tests pass: `cargo test -p lc_clone`
+- [x] Code review passes
 
 **Commit:** `[001][P4] Feature: Add LcClone for Option, Result, tuples, PhantomData, and unit`
 
@@ -415,6 +415,7 @@ The implementation follows a bottom-up approach:
 | P1 | Complete | 50cfbe4 | Workspace structure created with both crates |
 | P2 | Complete | cf8f0be | LcClone trait and primitive implementations added |
 | P3 | Complete | fd54879 | LcClone for Arc<T> and Rc<T> with ?Sized support |
+| P4 | Complete | 44ecd26 | LcClone for Option, Result, tuples (1-12), PhantomData, unit |
 
 ## Design Details
 
