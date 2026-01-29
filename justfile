@@ -32,17 +32,27 @@ build:
 bench:
     cargo bench -p lc_clone
 
+# Check if cargo-criterion is installed
+[private]
+check-cargo-criterion:
+    @command -v cargo-criterion >/dev/null 2>&1 || (echo "Error: cargo-criterion not found. Install with: cargo install cargo-criterion" && exit 1)
+
+# Check if criterion-table is installed
+[private]
+check-criterion-table: check-cargo-criterion
+    @command -v criterion-table >/dev/null 2>&1 || (echo "Error: criterion-table not found. Install with: cargo install criterion-table" && exit 1)
+
 # Generate benchmark comparison table as markdown
-bench-table:
+bench-table: check-criterion-table
     cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table
 
 # Generate benchmark table and save to file
-bench-table-save:
+bench-table-save: check-criterion-table
     cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
     @echo "Saved to BENCHMARKS.md"
 
 # Run benchmarks with im feature
-bench-im:
+bench-im: check-criterion-table
     cargo criterion -p lc_clone --features im --message-format=json 2>/dev/null | criterion-table
 
 # Build documentation
@@ -56,6 +66,10 @@ doc-open:
 # Clean build artifacts
 clean:
     cargo clean
+
+# Install optional benchmark tools (cargo-criterion and criterion-table)
+install-bench-tools:
+    cargo install cargo-criterion criterion-table
 
 # Run all checks (test, lint, fmt-check)
 check: fmt-check lint test
