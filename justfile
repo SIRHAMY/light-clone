@@ -32,6 +32,10 @@ build:
 bench:
     cargo bench -p lc_clone
 
+# Run benchmarks with all features
+bench-full:
+    cargo bench -p lc_clone --all-features
+
 # Check if cargo-criterion is installed
 [private]
 check-cargo-criterion:
@@ -54,6 +58,11 @@ bench-table-save: check-criterion-table
 # Run benchmarks with im feature
 bench-im: check-criterion-table
     cargo criterion -p lc_clone --features im --message-format=json 2>/dev/null | criterion-table
+
+# Generate benchmark table with all features and save to file
+bench-full-table-save: check-criterion-table
+    cargo criterion -p lc_clone --all-features --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
+    @echo "Saved to BENCHMARKS.md (with all features)"
 
 # Build documentation
 doc:
