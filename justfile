@@ -1,0 +1,61 @@
+# lc_clone development tasks
+
+# List available recipes
+default:
+    @just --list
+
+# Run all tests
+test:
+    cargo test --workspace --all-features
+
+# Run tests without feature flags
+test-minimal:
+    cargo test --workspace
+
+# Run clippy lints
+lint:
+    cargo clippy --workspace --all-features -- -D warnings
+
+# Format code
+fmt:
+    cargo fmt --all
+
+# Check formatting without modifying
+fmt-check:
+    cargo fmt --all -- --check
+
+# Build all targets
+build:
+    cargo build --workspace --all-features
+
+# Run benchmarks (full output)
+bench:
+    cargo bench -p lc_clone
+
+# Generate benchmark comparison table as markdown
+bench-table:
+    cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table
+
+# Generate benchmark table and save to file
+bench-table-save:
+    cargo criterion -p lc_clone --message-format=json 2>/dev/null | criterion-table > BENCHMARKS.md
+    @echo "Saved to BENCHMARKS.md"
+
+# Run benchmarks with im feature
+bench-im:
+    cargo criterion -p lc_clone --features im --message-format=json 2>/dev/null | criterion-table
+
+# Build documentation
+doc:
+    cargo doc --workspace --all-features --no-deps
+
+# Open documentation in browser
+doc-open:
+    cargo doc --workspace --all-features --no-deps --open
+
+# Clean build artifacts
+clean:
+    cargo clean
+
+# Run all checks (test, lint, fmt-check)
+check: fmt-check lint test
