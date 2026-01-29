@@ -216,3 +216,15 @@ fn test_single_field_tuple_variant() {
         }
     }
 }
+
+// Empty enum (uninhabited type)
+#[derive(LightClone)]
+enum Empty {}
+
+#[test]
+fn test_empty_enum_compiles() {
+    // Empty enums cannot be instantiated, but the derive should compile
+    // and generate a valid (empty) match expression
+    fn _assert_light_clone<T: LightClone>() {}
+    _assert_light_clone::<Empty>();
+}
