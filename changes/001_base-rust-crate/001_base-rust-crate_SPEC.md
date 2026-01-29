@@ -376,24 +376,24 @@ The implementation follows a bottom-up approach:
 
 **Tasks:**
 
-- [ ] Add criterion as dev-dependency
-- [ ] Add `[[bench]]` target in Cargo.toml
-- [ ] Benchmark: `Arc<str>.lc()` vs `Arc<str>.clone()` — should be identical
-- [ ] Benchmark: `Arc<LargeStruct>.lc()` vs `Arc<LargeStruct>.clone()` — should be identical
-- [ ] Benchmark: LcClone struct with 5 Arc fields: `.lc()` vs manual field-by-field clone
-- [ ] Benchmark: LcClone struct vs equivalent struct with String fields using `.clone()`
-- [ ] Benchmark with `im` feature: `im::Vector<i32>.lc()` vs `.clone()` — should be identical
-- [ ] Benchmark: nested structs (3 levels deep) with Arc vs String — show O(1) vs O(n)
-- [ ] Add different sizes for String comparison: 10 bytes, 100 bytes, 1KB, 10KB
-- [ ] Document benchmark results in comments
+- [x] Add criterion as dev-dependency
+- [x] Add `[[bench]]` target in Cargo.toml
+- [x] Benchmark: `Arc<str>.lc()` vs `Arc<str>.clone()` — should be identical
+- [x] Benchmark: `Arc<LargeStruct>.lc()` vs `Arc<LargeStruct>.clone()` — should be identical
+- [x] Benchmark: LcClone struct with 5 Arc fields: `.lc()` vs manual field-by-field clone
+- [x] Benchmark: LcClone struct vs equivalent struct with String fields using `.clone()`
+- [x] Benchmark with `im` feature: `im::Vector<i32>.lc()` vs `.clone()` — should be identical
+- [x] Benchmark: nested structs (3 levels deep) with Arc vs String — show O(1) vs O(n)
+- [x] Add different sizes for String comparison: 10 bytes, 100 bytes, 1KB, 10KB
+- [x] Document benchmark results in comments
 
 **Verification:**
 
-- [ ] `cargo bench -p lc_clone` runs successfully
-- [ ] `.lc()` on Arc-based types has same perf as `.clone()` (within noise)
-- [ ] `.lc()` on LcClone structs is significantly faster than deep cloning String-based equivalents
-- [ ] Benchmark report shows clear difference between light and deep cloning
-- [ ] Code review passes
+- [x] `cargo bench -p lc_clone` runs successfully
+- [x] `.lc()` on Arc-based types has same perf as `.clone()` (within noise)
+- [x] `.lc()` on LcClone structs is significantly faster than deep cloning String-based equivalents
+- [x] Benchmark report shows clear difference between light and deep cloning
+- [x] Code review passes
 
 **Commit:** `[001][P8] Feature: Add criterion benchmarks comparing .lc() to .clone()`
 
@@ -418,7 +418,8 @@ The implementation follows a bottom-up approach:
 | P4 | Complete | 44ecd26 | LcClone for Option, Result, tuples (1-12), PhantomData, unit |
 | P5 | Complete | c729c95 | Derive macro with LcClone and Clone impls for structs |
 | P6 | Complete | 7188f59 | LcStr type alias and IntoLcStr trait with idempotent impl |
-| P7 | Complete | 8e95336 | im and rpds feature flags with LcClone implementations |
+| P7 | Complete | 7b76b34 | im and rpds feature flags with LcClone implementations |
+| P8 | Complete | 711483b | Criterion benchmarks comparing .lc() to .clone() |
 
 ## Design Details
 
