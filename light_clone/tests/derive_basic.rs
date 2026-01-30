@@ -15,7 +15,7 @@ fn test_basic_struct_with_primitives() {
     let s = PrimitiveStruct {
         a: 42,
         b: 100,
-        c: 3.14,
+        c: 2.72,
         d: true,
         e: 'x',
     };
@@ -23,7 +23,7 @@ fn test_basic_struct_with_primitives() {
     let cloned = s.light_clone();
     assert_eq!(cloned.a, 42);
     assert_eq!(cloned.b, 100);
-    assert!((cloned.c - 3.14).abs() < f64::EPSILON);
+    assert!((cloned.c - 2.72).abs() < f64::EPSILON);
     assert!(cloned.d);
     assert_eq!(cloned.e, 'x');
 }

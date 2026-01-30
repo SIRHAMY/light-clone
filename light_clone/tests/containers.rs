@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 #[test]
+#[allow(clippy::let_unit_value, clippy::unit_cmp)]
 fn unit_type_implements_light_clone() {
     let unit = ();
     let cloned = unit.light_clone();

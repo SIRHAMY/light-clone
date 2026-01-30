@@ -600,7 +600,7 @@ fn bench_vec_clone_vs_mutate(c: &mut Criterion) {
     let mut group = c.benchmark_group("vec__clone_vs_mutate_by_len");
 
     for size in sizes {
-        let vec: Vec<i32> = (0..size as i32).collect();
+        let vec: Vec<i32> = (0..size).collect();
 
         // Mutation: Vec::push (in-place, amortized O(1))
         group.bench_with_input(BenchmarkId::new("vec_mutate", size), &vec, |b, v| {
@@ -633,6 +633,7 @@ fn bench_vec_clone_vs_mutate(c: &mut Criterion) {
 
 /// Mutable version of nested struct for mutation benchmarks
 #[derive(Clone)]
+#[allow(dead_code)]
 struct MutableNestedStruct {
     name: String,
     count: i64,
@@ -708,7 +709,7 @@ fn bench_hashmap_clone_vs_mutate(c: &mut Criterion) {
     let mut group = c.benchmark_group("hashmap__clone_vs_mutate_by_len");
 
     for size in sizes {
-        let map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+        let map: HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
 
         // Mutation: HashMap::insert (in-place)
         group.bench_with_input(BenchmarkId::new("hashmap_mutate", size), &map, |b, m| {
@@ -768,7 +769,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::Vec (baseline)
-            let vec: Vec<i32> = (0..size as i32).collect();
+            let vec: Vec<i32> = (0..size).collect();
             group.bench_with_input(BenchmarkId::new("std_vec", size), &vec, |b, v| {
                 b.iter(|| black_box(v.clone()))
             });
@@ -776,7 +777,7 @@ mod persistent_benchmarks {
             // im::Vector
             #[cfg(feature = "im")]
             {
-                let im_vec: im::Vector<i32> = (0..size as i32).collect();
+                let im_vec: im::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("im_vector", size), &im_vec, |b, v| {
                     b.iter(|| black_box(v.light_clone()))
                 });
@@ -785,7 +786,7 @@ mod persistent_benchmarks {
             // imbl::Vector
             #[cfg(feature = "imbl")]
             {
-                let imbl_vec: imbl::Vector<i32> = (0..size as i32).collect();
+                let imbl_vec: imbl::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("imbl_vector", size), &imbl_vec, |b, v| {
                     b.iter(|| black_box(v.light_clone()))
                 });
@@ -794,7 +795,7 @@ mod persistent_benchmarks {
             // rpds::Vector
             #[cfg(feature = "rpds")]
             {
-                let rpds_vec: rpds::Vector<i32> = (0..size as i32).collect();
+                let rpds_vec: rpds::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("rpds_vector", size), &rpds_vec, |b, v| {
                     b.iter(|| black_box(v.light_clone()))
                 });
@@ -815,7 +816,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::Vec (baseline)
-            let vec: Vec<i32> = (0..size as i32).collect();
+            let vec: Vec<i32> = (0..size).collect();
             group.bench_with_input(BenchmarkId::new("std_vec", size), &vec, |b, v| {
                 b.iter(|| {
                     let mut cloned = black_box(v).clone();
@@ -827,7 +828,7 @@ mod persistent_benchmarks {
             // im::Vector
             #[cfg(feature = "im")]
             {
-                let im_vec: im::Vector<i32> = (0..size as i32).collect();
+                let im_vec: im::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("im_vector", size), &im_vec, |b, v| {
                     b.iter(|| {
                         let mut cloned = black_box(v).light_clone();
@@ -840,7 +841,7 @@ mod persistent_benchmarks {
             // imbl::Vector
             #[cfg(feature = "imbl")]
             {
-                let imbl_vec: imbl::Vector<i32> = (0..size as i32).collect();
+                let imbl_vec: imbl::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("imbl_vector", size), &imbl_vec, |b, v| {
                     b.iter(|| {
                         let mut cloned = black_box(v).light_clone();
@@ -853,7 +854,7 @@ mod persistent_benchmarks {
             // rpds::Vector (note: rpds uses push_back_mut for mutation)
             #[cfg(feature = "rpds")]
             {
-                let rpds_vec: rpds::Vector<i32> = (0..size as i32).collect();
+                let rpds_vec: rpds::Vector<i32> = (0..size).collect();
                 group.bench_with_input(BenchmarkId::new("rpds_vector", size), &rpds_vec, |b, v| {
                     b.iter(|| {
                         let cloned = black_box(v).light_clone().push_back(999);
@@ -878,7 +879,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::HashMap (baseline)
-            let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            let hash_map: HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
             group.bench_with_input(
                 BenchmarkId::new("std_hashmap", size),
                 &hash_map,
@@ -888,7 +889,7 @@ mod persistent_benchmarks {
             // im::HashMap
             #[cfg(feature = "im")]
             {
-                let im_map: im::HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+                let im_map: im::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(BenchmarkId::new("im_hashmap", size), &im_map, |b, map| {
                     b.iter(|| black_box(map.light_clone()))
                 });
@@ -898,7 +899,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "imbl")]
             {
                 let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap", size),
                     &imbl_map,
@@ -910,7 +911,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "rpds")]
             {
                 let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap", size),
                     &rpds_map,
@@ -930,7 +931,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::HashMap (baseline)
-            let hash_map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            let hash_map: HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
             group.bench_with_input(
                 BenchmarkId::new("std_hashmap", size),
                 &hash_map,
@@ -946,7 +947,7 @@ mod persistent_benchmarks {
             // im::HashMap
             #[cfg(feature = "im")]
             {
-                let im_map: im::HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+                let im_map: im::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(BenchmarkId::new("im_hashmap", size), &im_map, |b, map| {
                     b.iter(|| {
                         let mut cloned = black_box(map).light_clone();
@@ -960,7 +961,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "imbl")]
             {
                 let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap", size),
                     &imbl_map,
@@ -978,7 +979,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "rpds")]
             {
                 let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap", size),
                     &rpds_map,
@@ -1015,7 +1016,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::Vec mutation (baseline - best case when you don't need original)
-            let vec: Vec<i32> = (0..size as i32).collect();
+            let vec: Vec<i32> = (0..size).collect();
             group.bench_with_input(BenchmarkId::new("vec_mutate_only", size), &vec, |b, v| {
                 b.iter_batched(
                     || v.clone(),
@@ -1030,7 +1031,7 @@ mod persistent_benchmarks {
             // im::Vector clone-then-mutate
             #[cfg(feature = "im")]
             {
-                let im_vec: im::Vector<i32> = (0..size as i32).collect();
+                let im_vec: im::Vector<i32> = (0..size).collect();
                 group.bench_with_input(
                     BenchmarkId::new("im_vector_clone_mutate", size),
                     &im_vec,
@@ -1047,7 +1048,7 @@ mod persistent_benchmarks {
             // imbl::Vector clone-then-mutate
             #[cfg(feature = "imbl")]
             {
-                let imbl_vec: imbl::Vector<i32> = (0..size as i32).collect();
+                let imbl_vec: imbl::Vector<i32> = (0..size).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_vector_clone_mutate", size),
                     &imbl_vec,
@@ -1064,7 +1065,7 @@ mod persistent_benchmarks {
             // rpds::Vector clone-then-mutate
             #[cfg(feature = "rpds")]
             {
-                let rpds_vec: rpds::Vector<i32> = (0..size as i32).collect();
+                let rpds_vec: rpds::Vector<i32> = (0..size).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_vector_clone_mutate", size),
                     &rpds_vec,
@@ -1095,7 +1096,7 @@ mod persistent_benchmarks {
 
         for size in sizes {
             // std::HashMap mutation (baseline - best case when you don't need original)
-            let map: HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+            let map: HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
             group.bench_with_input(
                 BenchmarkId::new("hashmap_mutate_only", size),
                 &map,
@@ -1114,7 +1115,7 @@ mod persistent_benchmarks {
             // im::HashMap clone-then-mutate
             #[cfg(feature = "im")]
             {
-                let im_map: im::HashMap<i32, i32> = (0..size as i32).map(|i| (i, i * 2)).collect();
+                let im_map: im::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("im_hashmap_clone_mutate", size),
                     &im_map,
@@ -1132,7 +1133,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "imbl")]
             {
                 let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap_clone_mutate", size),
                     &imbl_map,
@@ -1150,7 +1151,7 @@ mod persistent_benchmarks {
             #[cfg(feature = "rpds")]
             {
                 let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size as i32).map(|i| (i, i * 2)).collect();
+                    (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap_clone_mutate", size),
                     &rpds_map,
