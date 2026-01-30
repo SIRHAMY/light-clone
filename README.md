@@ -106,7 +106,7 @@ enum State {
 
 LightClone enforces that your types use immutable data structures (`Arc`, `Rc`, persistent collections) which enable O(1) cloning through structural sharing. This approach shines when:
 
-- **Clone-heavy workloads** - Sharing state across threads, event sourcing, undo/redo systems
+- **Clone-heavy workloads** - Sharing state across threads, event sourcing, undo/redo systems, functional pipelines with pure transforms
 - **Cloning large or nested data** - A 10KB string clone copies 10KB; an `Arc<str>` clone increments a counter
 - **Concurrent code** - Clone and send freely without worrying about data races or locks
 - **Structural sharing matters** - Persistent collections share unchanged portions between versions
