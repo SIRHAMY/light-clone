@@ -104,7 +104,7 @@ enum State {
 
 LightClone has zero runtime overhead. The `.light_clone()` method compiles to identical code as `.clone()` for the underlying types.
 
-Benchmarks show 5-19x speedup compared to deep cloning when using persistent collections instead of standard library collections.
+Benchmarks show 5-19x speedup compared to deep cloning when using persistent collections instead of standard library collections. See [BENCHMARKS.md](BENCHMARKS.md) for details.
 
 ## Minimum Supported Rust Version
 
