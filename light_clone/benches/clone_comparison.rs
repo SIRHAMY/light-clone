@@ -898,8 +898,7 @@ mod persistent_benchmarks {
             // imbl::HashMap
             #[cfg(feature = "imbl")]
             {
-                let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let imbl_map: imbl::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap", size),
                     &imbl_map,
@@ -910,8 +909,7 @@ mod persistent_benchmarks {
             // rpds::HashTrieMap
             #[cfg(feature = "rpds")]
             {
-                let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let rpds_map: rpds::HashTrieMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap", size),
                     &rpds_map,
@@ -960,8 +958,7 @@ mod persistent_benchmarks {
             // imbl::HashMap
             #[cfg(feature = "imbl")]
             {
-                let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let imbl_map: imbl::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap", size),
                     &imbl_map,
@@ -978,8 +975,7 @@ mod persistent_benchmarks {
             // rpds::HashTrieMap (note: rpds uses insert for persistent update)
             #[cfg(feature = "rpds")]
             {
-                let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let rpds_map: rpds::HashTrieMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap", size),
                     &rpds_map,
@@ -1132,8 +1128,7 @@ mod persistent_benchmarks {
             // imbl::HashMap clone-then-mutate
             #[cfg(feature = "imbl")]
             {
-                let imbl_map: imbl::HashMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let imbl_map: imbl::HashMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("imbl_hashmap_clone_mutate", size),
                     &imbl_map,
@@ -1150,8 +1145,7 @@ mod persistent_benchmarks {
             // rpds::HashTrieMap clone-then-mutate
             #[cfg(feature = "rpds")]
             {
-                let rpds_map: rpds::HashTrieMap<i32, i32> =
-                    (0..size).map(|i| (i, i * 2)).collect();
+                let rpds_map: rpds::HashTrieMap<i32, i32> = (0..size).map(|i| (i, i * 2)).collect();
                 group.bench_with_input(
                     BenchmarkId::new("rpds_hashtriemap_clone_mutate", size),
                     &rpds_map,
