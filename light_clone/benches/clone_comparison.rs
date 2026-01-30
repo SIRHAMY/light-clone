@@ -615,13 +615,17 @@ fn bench_vec_clone_vs_mutate(c: &mut Criterion) {
         });
 
         // Clone approach: Clone entire Vec, then push
-        group.bench_with_input(BenchmarkId::new("vec_clone_then_mutate", size), &vec, |b, v| {
-            b.iter(|| {
-                let mut cloned = v.clone();
-                cloned.push(999);
-                black_box(cloned)
-            })
-        });
+        group.bench_with_input(
+            BenchmarkId::new("vec_clone_then_mutate", size),
+            &vec,
+            |b, v| {
+                b.iter(|| {
+                    let mut cloned = v.clone();
+                    cloned.push(999);
+                    black_box(cloned)
+                })
+            },
+        );
     }
 
     group.finish();
