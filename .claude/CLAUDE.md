@@ -50,6 +50,27 @@ cargo fmt
 cargo clippy --workspace --all-features
 ```
 
+## CI Validation
+
+**Run these checks after making code changes to catch CI failures early:**
+
+```bash
+# Check compilation (fast feedback)
+cargo check --workspace --all-features
+
+# Check formatting (must pass exactly)
+cargo fmt --check
+
+# Run clippy with warnings as errors (matches CI)
+cargo clippy --workspace --all-features -- -D warnings
+```
+
+When working on this codebase:
+1. Run `cargo check` frequently while developing for fast feedback
+2. Run `cargo fmt` before finishing any code changes
+3. Run `cargo clippy -- -D warnings` before considering work complete
+4. Fix all clippy warnings - CI treats warnings as errors
+
 ## Key Design Decisions
 
 - **Compile-time safety**: Invalid types (String, Vec, etc.) are rejected at compile time
