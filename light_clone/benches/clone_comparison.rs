@@ -48,6 +48,8 @@
 //! | `five_arc_fields` | ~41ns | ~41ns | 5 refcount bumps |
 //! | `lc_vs_string_fields_by_len/10000` | ~41ns | ~230ns | LightClone 5.6x faster |
 //! | `nested_structs_3_levels_by_len/10000` | ~26ns | ~509ns | LightClone 19.5x faster |
+//! | `deep_nested_by_depth/100` | ~1.1µs | ~10-50µs | Scales linearly with depth |
+//! | `deep_nested_50_levels_by_size/10000` | ~550ns | ~50µs+ | LightClone independent of size |
 //!
 //! ## Collection Benchmarks (requires persistent collection features)
 //!
@@ -134,6 +136,60 @@ impl FiveStringFields {
             field4: s.to_string(),
             field5: s.to_string(),
         }
+    }
+}
+
+/// Arbitrarily deeply nested struct (LightClone version).
+/// Uses Option<Arc<Self>> for recursive nesting.
+/// Clone cost: O(depth) Arc refcount bumps - constant per level regardless of data size.
+#[derive(LightClone)]
+struct DeepNestedLc {
+    value: Arc<str>,
+    inner: Option<Arc<DeepNestedLc>>,
+}
+
+impl DeepNestedLc {
+    /// Create a nested structure with the given depth and string value.
+    fn new(depth: usize, s: &str) -> Self {
+        let arc_s: Arc<str> = Arc::from(s);
+        let mut current = DeepNestedLc {
+            value: arc_s.clone(),
+            inner: None,
+        };
+        for _ in 1..depth {
+            current = DeepNestedLc {
+                value: arc_s.clone(),
+                inner: Some(Arc::new(current)),
+            };
+        }
+        current
+    }
+}
+
+/// Arbitrarily deeply nested struct (String version - deep clone).
+/// Uses Option<Box<Self>> for recursive nesting.
+/// Clone cost: O(depth * string_size) - heap allocation + memcpy at each level.
+#[derive(Clone)]
+#[allow(dead_code)]
+struct DeepNestedString {
+    value: String,
+    inner: Option<Box<DeepNestedString>>,
+}
+
+impl DeepNestedString {
+    /// Create a nested structure with the given depth and string value.
+    fn new(depth: usize, s: &str) -> Self {
+        let mut current = DeepNestedString {
+            value: s.to_string(),
+            inner: None,
+        };
+        for _ in 1..depth {
+            current = DeepNestedString {
+                value: s.to_string(),
+                inner: Some(Box::new(current)),
+            };
+        }
+        current
     }
 }
 
@@ -329,6 +385,76 @@ fn bench_nested_structs(c: &mut Criterion) {
 
         group.bench_with_input(
             BenchmarkId::new("string_nested_clone", size),
+            &string_nested,
+            |b, struct_ref| b.iter(|| black_box(struct_ref.clone())),
+        );
+    }
+
+    group.finish();
+}
+
+/// Benchmark: Arbitrarily deeply nested structs
+///
+/// This benchmark tests clone performance as nesting depth increases.
+/// Each level adds one more Arc clone (LightClone) or one more heap allocation (String).
+///
+/// Expected:
+/// - LightClone: O(depth) Arc refcount bumps, independent of string size
+/// - String: O(depth * string_size) - both depth and data size matter
+///
+/// At depth=100 with 1KB strings:
+/// - LightClone: ~100 Arc clones ≈ 1.1µs
+/// - String: 100 allocations + 100KB memcpy ≈ 10-50µs
+fn bench_deep_nested_by_depth(c: &mut Criterion) {
+    let depths = [1, 5, 10, 25, 50, 100];
+    let string_size = 1000; // 1KB per level
+    let s = make_string(string_size);
+
+    let mut group = c.benchmark_group("deep_nested_by_depth");
+
+    for depth in depths {
+        let lc_nested = DeepNestedLc::new(depth, &s);
+        let string_nested = DeepNestedString::new(depth, &s);
+
+        group.bench_with_input(
+            BenchmarkId::new("arc_lc", depth),
+            &lc_nested,
+            |b, struct_ref| b.iter(|| black_box(struct_ref.light_clone())),
+        );
+
+        group.bench_with_input(
+            BenchmarkId::new("string_clone", depth),
+            &string_nested,
+            |b, struct_ref| b.iter(|| black_box(struct_ref.clone())),
+        );
+    }
+
+    group.finish();
+}
+
+/// Benchmark: Deep nesting with varying string sizes
+///
+/// Fixed depth (50 levels), varying string sizes.
+/// Shows that LightClone cost is independent of data size at each level.
+fn bench_deep_nested_by_size(c: &mut Criterion) {
+    let depth = 50;
+    let sizes = [10, 100, 1_000, 10_000];
+
+    let mut group = c.benchmark_group("deep_nested_50_levels_by_size");
+
+    for size in sizes {
+        let s = make_string(size);
+        let lc_nested = DeepNestedLc::new(depth, &s);
+        let string_nested = DeepNestedString::new(depth, &s);
+
+        group.bench_with_input(
+            BenchmarkId::new("arc_lc", size),
+            &lc_nested,
+            |b, struct_ref| b.iter(|| black_box(struct_ref.light_clone())),
+        );
+
+        group.bench_with_input(
+            BenchmarkId::new("string_clone", size),
             &string_nested,
             |b, struct_ref| b.iter(|| black_box(struct_ref.clone())),
         );
@@ -658,6 +784,8 @@ criterion_group!(
     bench_five_arc_fields,
     bench_lc_vs_string_fields,
     bench_nested_structs,
+    bench_deep_nested_by_depth,
+    bench_deep_nested_by_size,
     bench_string_sizes,
     bench_arc_lc_vs_clone,
 );
@@ -670,6 +798,8 @@ criterion_group!(
     bench_five_arc_fields,
     bench_lc_vs_string_fields,
     bench_nested_structs,
+    bench_deep_nested_by_depth,
+    bench_deep_nested_by_size,
     bench_string_sizes,
     bench_arc_lc_vs_clone,
     // Collection benchmarks (comparing im, imbl, rpds, std)
