@@ -106,6 +106,10 @@ LightClone has zero runtime overhead. The `.light_clone()` method compiles to id
 
 Benchmarks show 5-19x speedup compared to deep cloning when using persistent collections instead of standard library collections.
 
+## Minimum Supported Rust Version
+
+Rust 1.70.0 (features `im`, `imbl`). The `rpds` feature requires Rust 1.85+ due to upstream dependencies.
+
 ## License
 
 Licensed under either of:

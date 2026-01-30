@@ -65,5 +65,6 @@ jobs:
         with:
           toolchain: "1.70.0"
       - uses: Swatinem/rust-cache@v2
-      - name: Check MSRV
-        run: cargo check --workspace --all-features
+      - name: Check MSRV (core + im + imbl)
+        # rpds excluded: requires archery which uses 2024 edition (Rust 1.85+)
+        run: cargo check --workspace --features im,imbl
