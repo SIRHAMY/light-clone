@@ -4,7 +4,7 @@ Compile-time enforcement for O(1) clone operations in Rust.
 
 ## Overview
 
-LightClone provides a marker trait and derive macro that guarantees cloning is cheap. It only allows types where cloning involves:
+LightClone is for codebases that embrace immutable data structures. It provides a marker trait and derive macro that guarantees cloning is cheap by only allowing types where cloning involves:
 
 - **Atomic refcount increments** (`Arc`)
 - **Non-atomic refcount increments** (`Rc`)
@@ -64,7 +64,7 @@ Optional integrations with persistent collection libraries:
 
 ```toml
 [dependencies]
-light_clone = { version = "0.1", features = ["imbl"] }
+light_clone = { version = "0.2", features = ["imbl"] }
 ```
 
 | Feature | Crate | Description |
@@ -82,6 +82,8 @@ All primitive types: `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `bool`, `char`, `()
 ### Smart Pointers
 - `Arc<T>` where `T: ?Sized`
 - `Rc<T>` where `T: ?Sized`
+- `std::sync::Weak<T>` where `T: ?Sized`
+- `std::rc::Weak<T>` where `T: ?Sized`
 
 ### Containers
 - `Option<T>` where `T: LightClone`
@@ -100,15 +102,40 @@ enum State {
 }
 ```
 
+## When to Use Immutable Data Structures
+
+LightClone enforces that your types use immutable data structures (`Arc`, `Rc`, persistent collections) which enable O(1) cloning through structural sharing. This approach shines when:
+
+- **Clone-heavy workloads** - Sharing state across threads, event sourcing, undo/redo systems
+- **Cloning large or nested data** - A 10KB string clone copies 10KB; an `Arc<str>` clone increments a counter
+- **Concurrent code** - Clone and send freely without worrying about data races or locks
+- **Structural sharing matters** - Persistent collections share unchanged portions between versions
+
+The trade-offs to consider:
+
+- **Mutation is still faster than cloning** - LightClone enforces cloning is cheap, not free. In-place mutation avoids refcount operations entirely, so prefer mutation for hot paths
+- **Memory overhead** - Arc/Rc add pointer indirection and allocation overhead. Persistent collections trade memory for structural sharing
+
+**Where LightClone fits:** Once you've committed to immutable data structures, LightClone provides compile-time enforcement that cloning is cheap. It catches accidental `String` or `Vec` fields that would silently introduce expensive deep clones.
+
 ## Performance
 
-LightClone has zero runtime overhead. The `.light_clone()` method compiles to identical code as `.clone()` for the underlying types.
+LightClone has zero runtime overhead—`.light_clone()` compiles to identical code as `.clone()`.
 
-Benchmarks show 5-19x speedup compared to deep cloning when using persistent collections instead of standard library collections. See [BENCHMARKS.md](BENCHMARKS.md) for details.
+The real performance benefit comes from using immutable data structures:
+
+| Scenario | Immutable | Standard | Difference |
+|----------|-----------|----------|------------|
+| Clone 10KB string | 11 ns | 83 ns | 7x faster |
+| Clone struct with 50 levels of nesting | 15 ns | 1.9 µs | 128x faster |
+| Clone 10K element vector | 41 ns | 622 ns | 15x faster |
+| Clone 10K element hashmap | 15 ns | 2.2 µs | 148x faster |
+
+Mutation has trade-offs—persistent collections are slower for small, mutation-heavy workloads but catch up as data grows. See [BENCHMARKS.md](BENCHMARKS.md) for detailed comparisons.
 
 ## Minimum Supported Rust Version
 
-Rust 1.70.0 (features `im`, `imbl`). The `rpds` feature requires Rust 1.85+ due to upstream dependencies.
+Rust 1.70.0. The `rpds` feature requires Rust 1.85+ due to upstream dependencies.
 
 ## License
 
