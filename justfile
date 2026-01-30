@@ -4,25 +4,32 @@
 default:
     @just --list
 
-# Run all tests
+# Run all tests (quiet output, shows summary + failures)
 test:
-    cargo test --workspace --all-features
+    cargo test --workspace --all-features --quiet
 
 # Run tests without feature flags
 test-minimal:
-    cargo test --workspace
+    cargo test --workspace --quiet
 
-# Run clippy lints
+# Run all CI checks (compile, fmt, lint, test)
+lint-ci: compile fmt-check lint test
+
+# Run clippy lints (matches CI)
 lint:
-    cargo clippy --workspace --all-features -- -D warnings
+    cargo clippy --workspace --all-features --all-targets -- -D warnings
 
 # Format code
 fmt:
     cargo fmt --all
 
-# Check formatting without modifying
+# Check formatting without modifying (matches CI)
 fmt-check:
-    cargo fmt --all -- --check
+    cargo fmt --all --check
+
+# Check compilation (fast feedback, matches CI)
+compile:
+    cargo check --workspace --all-features --all-targets
 
 # Build all targets
 build:
@@ -80,5 +87,3 @@ clean:
 install-bench-tools:
     cargo install cargo-criterion criterion-table
 
-# Run all checks (test, lint, fmt-check)
-check: fmt-check lint test
