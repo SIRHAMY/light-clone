@@ -44,7 +44,7 @@ cargo test --workspace --all-features
 cargo bench -p light_clone --all-features
 
 # Format code
-cargo fmt
+cargo fmt --all
 
 # Lint (includes tests and benchmarks)
 cargo clippy --workspace --all-features --all-targets
@@ -59,7 +59,7 @@ cargo clippy --workspace --all-features --all-targets
 cargo check --workspace --all-features --all-targets
 
 # Check formatting (must pass exactly)
-cargo fmt --check
+cargo fmt --all --check
 
 # Run clippy with warnings as errors (matches CI)
 cargo clippy --workspace --all-features --all-targets -- -D warnings
@@ -67,7 +67,7 @@ cargo clippy --workspace --all-features --all-targets -- -D warnings
 
 When working on this codebase:
 1. Run `cargo check` frequently while developing for fast feedback
-2. Run `cargo fmt` before finishing any code changes
+2. Run `cargo fmt --all` before finishing any code changes
 3. Run `cargo clippy --all-targets -- -D warnings` before considering work complete
 4. Fix all clippy warnings - CI treats warnings as errors
 
