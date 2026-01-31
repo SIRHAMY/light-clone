@@ -58,14 +58,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn vector_implements_lc_clone() {
+    fn vector_implements_light_clone() {
         let v: im::Vector<i32> = im::vector![1, 2, 3];
         let cloned = v.light_clone();
         assert_eq!(v, cloned);
     }
 
     #[test]
-    fn hash_map_implements_lc_clone() {
+    fn hash_map_implements_light_clone() {
         let mut m = im::HashMap::new();
         m.insert("key", 42);
         let cloned = m.light_clone();
@@ -73,7 +73,7 @@ mod tests {
     }
 
     #[test]
-    fn ord_map_implements_lc_clone() {
+    fn ord_map_implements_light_clone() {
         let mut m = im::OrdMap::new();
         m.insert("key", 42);
         let cloned = m.light_clone();
@@ -81,7 +81,7 @@ mod tests {
     }
 
     #[test]
-    fn hash_set_implements_lc_clone() {
+    fn hash_set_implements_light_clone() {
         let mut s = im::HashSet::new();
         s.insert(42);
         let cloned = s.light_clone();
@@ -89,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn ord_set_implements_lc_clone() {
+    fn ord_set_implements_light_clone() {
         let mut s = im::OrdSet::new();
         s.insert(42);
         let cloned = s.light_clone();

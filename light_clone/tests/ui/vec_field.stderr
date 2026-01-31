@@ -1,10 +1,10 @@
-error[E0277]: the trait bound `Vec<i32>: LcClone` is not satisfied
+error[E0277]: the trait bound `Vec<i32>: LightClone` is not satisfied
  --> tests/ui/vec_field.rs:3:10
   |
 3 | #[derive(LightClone)]
-  |          ^^^^^^^^^^ the trait `LcClone` is not implemented for `Vec<i32>`
+  |          ^^^^^^^^^^ the trait `LightClone` is not implemented for `Vec<i32>`
   |
-  = help: the following other types implement trait `LcClone`:
+  = help: the following other types implement trait `LightClone`:
             &T
             ()
             (A, B)

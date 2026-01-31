@@ -1,11 +1,11 @@
-error[E0277]: the trait bound `String: LcClone` is not satisfied
+error[E0277]: the trait bound `String: LightClone` is not satisfied
  --> tests/ui/enum_struct_string_field.rs:6:11
   |
 3 | #[derive(LightClone)]
   |          ---------- required by a bound introduced by this call
 ...
 6 |     Bad { s: String }, // String does not implement LightClone
-  |           ^ the trait `LcClone` is not implemented for `String`
+  |           ^ the trait `LightClone` is not implemented for `String`
   |
 help: consider borrowing here
   |

@@ -2,20 +2,20 @@ use light_clone::{IntoLightStr, LightClone, LightStr};
 use std::sync::Arc;
 
 #[test]
-fn into_lc_from_str_literal() {
+fn into_light_str_from_str_literal() {
     let s = "hello".into_light_str();
     assert_eq!(&*s, "hello");
 }
 
 #[test]
-fn into_lc_from_owned_string() {
+fn into_light_str_from_owned_string() {
     let owned = String::from("world");
     let s = owned.into_light_str();
     assert_eq!(&*s, "world");
 }
 
 #[test]
-fn into_lc_from_string_ref() {
+fn into_light_str_from_string_ref() {
     let owned = String::from("test");
     let s = (&owned).into_light_str();
     assert_eq!(&*s, "test");
@@ -24,13 +24,13 @@ fn into_lc_from_string_ref() {
 }
 
 #[test]
-fn into_lc_returns_lc_str_type() {
+fn into_light_str_returns_light_str_type() {
     let s: LightStr = "hello".into_light_str();
     let _arc: Arc<str> = s; // Compiles because LightStr is Arc<str>
 }
 
 #[test]
-fn into_lc_result_is_light_clone() {
+fn into_light_str_result_is_light_clone() {
     let s = "hello".into_light_str();
     let cloned = s.light_clone();
     assert_eq!(&*s, &*cloned);
@@ -38,7 +38,7 @@ fn into_lc_result_is_light_clone() {
 }
 
 #[test]
-fn into_lc_str_in_derived_struct() {
+fn into_light_str_str_in_derived_struct() {
     #[derive(LightClone, Debug, PartialEq)]
     struct Config {
         host: LightStr,
@@ -55,28 +55,28 @@ fn into_lc_str_in_derived_struct() {
 }
 
 #[test]
-fn into_lc_empty_string() {
+fn into_light_str_empty_string() {
     let s = "".into_light_str();
     assert_eq!(s.len(), 0);
     assert_eq!(&*s, "");
 }
 
 #[test]
-fn into_lc_unicode_string() {
+fn into_light_str_unicode_string() {
     let s = "こんにちは".into_light_str();
     assert_eq!(&*s, "こんにちは");
     assert_eq!(s.chars().count(), 5);
 }
 
 #[test]
-fn into_lc_long_string() {
+fn into_light_str_long_string() {
     let long = "x".repeat(10_000);
     let s = long.into_light_str();
     assert_eq!(s.len(), 10_000);
 }
 
 #[test]
-fn multiple_into_lc_calls() {
+fn multiple_into_light_str_calls() {
     let s1 = "first".into_light_str();
     let s2 = "second".into_light_str();
     let s3 = "third".into_light_str();
@@ -87,7 +87,7 @@ fn multiple_into_lc_calls() {
 }
 
 #[test]
-fn into_lc_from_lc_str_is_idempotent() {
+fn into_light_str_from_light_str_is_idempotent() {
     let s: LightStr = Arc::from("hello");
     let s2 = s.clone().into_light_str();
     assert_eq!(&*s2, "hello");
@@ -96,22 +96,22 @@ fn into_lc_from_lc_str_is_idempotent() {
 }
 
 #[test]
-fn into_lc_works_in_generic_context() {
-    fn takes_into_lc(s: impl IntoLightStr) -> LightStr {
+fn into_light_str_works_in_generic_context() {
+    fn takes_into_light_str(s: impl IntoLightStr) -> LightStr {
         s.into_light_str()
     }
 
     // Works with &str
-    let s1 = takes_into_lc("hello");
+    let s1 = takes_into_light_str("hello");
     assert_eq!(&*s1, "hello");
 
     // Works with String
-    let s2 = takes_into_lc(String::from("world"));
+    let s2 = takes_into_light_str(String::from("world"));
     assert_eq!(&*s2, "world");
 
     // Works with LightStr
     let s3: LightStr = Arc::from("existing");
-    let s4 = takes_into_lc(s3.clone());
+    let s4 = takes_into_light_str(s3.clone());
     assert_eq!(&*s4, "existing");
     assert!(Arc::ptr_eq(&s3, &s4));
 }

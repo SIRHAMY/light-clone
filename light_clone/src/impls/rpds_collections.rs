@@ -83,56 +83,56 @@ mod tests {
     use super::*;
 
     #[test]
-    fn vector_implements_lc_clone() {
+    fn vector_implements_light_clone() {
         let v: rpds::Vector<i32> = rpds::Vector::new().push_back(1).push_back(2).push_back(3);
         let cloned = v.light_clone();
         assert_eq!(v, cloned);
     }
 
     #[test]
-    fn hash_trie_map_implements_lc_clone() {
+    fn hash_trie_map_implements_light_clone() {
         let m: rpds::HashTrieMap<&str, i32> = rpds::HashTrieMap::new().insert("key", 42);
         let cloned = m.light_clone();
         assert_eq!(m, cloned);
     }
 
     #[test]
-    fn red_black_tree_map_implements_lc_clone() {
+    fn red_black_tree_map_implements_light_clone() {
         let m: rpds::RedBlackTreeMap<&str, i32> = rpds::RedBlackTreeMap::new().insert("key", 42);
         let cloned = m.light_clone();
         assert_eq!(m, cloned);
     }
 
     #[test]
-    fn hash_trie_set_implements_lc_clone() {
+    fn hash_trie_set_implements_light_clone() {
         let s: rpds::HashTrieSet<i32> = rpds::HashTrieSet::new().insert(42);
         let cloned = s.light_clone();
         assert_eq!(s, cloned);
     }
 
     #[test]
-    fn red_black_tree_set_implements_lc_clone() {
+    fn red_black_tree_set_implements_light_clone() {
         let s: rpds::RedBlackTreeSet<i32> = rpds::RedBlackTreeSet::new().insert(42);
         let cloned = s.light_clone();
         assert_eq!(s, cloned);
     }
 
     #[test]
-    fn list_implements_lc_clone() {
+    fn list_implements_light_clone() {
         let l: rpds::List<i32> = rpds::List::new().push_front(1).push_front(2);
         let cloned = l.light_clone();
         assert_eq!(l, cloned);
     }
 
     #[test]
-    fn queue_implements_lc_clone() {
+    fn queue_implements_light_clone() {
         let q: rpds::Queue<i32> = rpds::Queue::new().enqueue(1).enqueue(2);
         let cloned = q.light_clone();
         assert_eq!(q, cloned);
     }
 
     #[test]
-    fn stack_implements_lc_clone() {
+    fn stack_implements_light_clone() {
         let s: rpds::Stack<i32> = rpds::Stack::new().push(1).push(2);
         let cloned = s.light_clone();
         assert_eq!(s, cloned);

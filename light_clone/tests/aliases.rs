@@ -2,14 +2,14 @@ use light_clone::{LightClone, LightStr};
 use std::sync::Arc;
 
 #[test]
-fn lc_str_is_arc_str() {
+fn light_str_is_arc_str() {
     // LightStr is a type alias for Arc<str>
     let s: LightStr = Arc::from("hello");
     let _arc: Arc<str> = s; // This compiles because they're the same type
 }
 
 #[test]
-fn lc_str_implements_light_clone() {
+fn light_str_implements_light_clone() {
     let s: LightStr = Arc::from("hello");
     let cloned = s.light_clone();
     assert_eq!(&*s, &*cloned);
@@ -17,7 +17,7 @@ fn lc_str_implements_light_clone() {
 }
 
 #[test]
-fn lc_str_clone_is_o1() {
+fn light_str_clone_is_o1() {
     let s: LightStr = Arc::from("hello");
     assert_eq!(Arc::strong_count(&s), 1);
 
@@ -31,7 +31,7 @@ fn lc_str_clone_is_o1() {
 }
 
 #[test]
-fn lc_str_can_be_used_in_derived_struct() {
+fn light_str_can_be_used_in_derived_struct() {
     #[derive(LightClone, Debug, PartialEq)]
     struct Person {
         name: LightStr,
@@ -48,7 +48,7 @@ fn lc_str_can_be_used_in_derived_struct() {
 }
 
 #[test]
-fn lc_str_works_with_arc_methods() {
+fn light_str_works_with_arc_methods() {
     let s: LightStr = Arc::from("hello world");
 
     // Can use Arc methods
@@ -61,7 +61,7 @@ fn lc_str_works_with_arc_methods() {
 }
 
 #[test]
-fn lc_str_accepts_arc_str_functions() {
+fn light_str_accepts_arc_str_functions() {
     fn accepts_arc_str(s: &Arc<str>) -> usize {
         s.len()
     }

@@ -4,16 +4,8 @@ use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput, Fields, FieldsNamed, FieldsUnnamed, Ident, Index};
 
 /// Derive macro for `LightClone` trait.
-///
-/// Also available as `#[derive(LcClone)]` for backwards compatibility.
 #[proc_macro_derive(LightClone)]
 pub fn derive_light_clone(input: TokenStream) -> TokenStream {
-    derive_light_clone_impl(input)
-}
-
-/// Legacy alias for `#[derive(LightClone)]`.
-#[proc_macro_derive(LcClone)]
-pub fn derive_lc_clone(input: TokenStream) -> TokenStream {
     derive_light_clone_impl(input)
 }
 
