@@ -17,3 +17,18 @@ mod uuid;
 
 #[cfg(feature = "chrono")]
 mod chrono_types;
+
+#[cfg(feature = "bytes")]
+mod bytes_types;
+
+#[cfg(feature = "rust_decimal")]
+mod rust_decimal_types;
+
+#[cfg(feature = "ordered-float")]
+mod ordered_float_types;
+
+#[cfg(feature = "smol_str")]
+mod smol_str_types;
+
+#[cfg(feature = "time")]
+mod time_types;

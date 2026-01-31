@@ -62,19 +62,38 @@ let clone = s.lc();  // O(1) - just increments refcount
 
 ## Features
 
-Optional integrations with persistent collection libraries:
+Enable integrations with popular crates via feature flags:
 
 ```toml
 [dependencies]
-light_clone = { version = "0.2", features = ["imbl"] }
+light_clone = { version = "0.3", features = ["bytes", "smol_str"] }
 ```
 
-| Feature | Crate | Description |
-|---------|-------|-------------|
-| `im` | [im](https://crates.io/crates/im) | Immutable collections |
-| `imbl` | [imbl](https://crates.io/crates/imbl) | Maintained fork of im |
-| `rpds` | [rpds](https://crates.io/crates/rpds) | Reactive persistent data structures |
-| `full` | All of the above | Enable all collection integrations |
+### Persistent Collections
+
+| Feature | Crate | Types |
+|---------|-------|-------|
+| `im` | [im](https://crates.io/crates/im) | `Vector`, `HashMap`, `HashSet`, `OrdMap`, `OrdSet` |
+| `imbl` | [imbl](https://crates.io/crates/imbl) | `Vector`, `HashMap`, `HashSet`, `OrdMap`, `OrdSet` |
+| `rpds` | [rpds](https://crates.io/crates/rpds) | `Vector`, `List`, `Queue`, `Stack`, `HashTrieMap`, `HashTrieSet`, `RedBlackTreeMap`, `RedBlackTreeSet` |
+
+### Common Types
+
+| Feature | Crate | Types | Clone Mechanism |
+|---------|-------|-------|-----------------|
+| `bytes` | [bytes](https://crates.io/crates/bytes) | `Bytes` | Arc-based ref counting |
+| `smol_str` | [smol_str](https://crates.io/crates/smol_str) | `SmolStr` | Inline or Arc |
+| `uuid` | [uuid](https://crates.io/crates/uuid) | `Uuid` | Copy (128-bit) |
+| `rust_decimal` | [rust_decimal](https://crates.io/crates/rust_decimal) | `Decimal` | Copy (128-bit) |
+| `ordered-float` | [ordered-float](https://crates.io/crates/ordered-float) | `OrderedFloat<T>`, `NotNan<T>` | Copy wrapper |
+| `chrono` | [chrono](https://crates.io/crates/chrono) | `NaiveDate`, `NaiveTime`, `NaiveDateTime`, `DateTime<Tz>`, `Month`, `Weekday`, `TimeDelta`, `Utc`, `FixedOffset` | Copy |
+| `time` | [time](https://crates.io/crates/time) | `Date`, `Time`, `PrimitiveDateTime`, `OffsetDateTime`, `UtcOffset`, `Duration`, `Month`, `Weekday` | Copy |
+
+### Meta Features
+
+| Feature | Description |
+|---------|-------------|
+| `full` | Enable all optional integrations |
 
 ## Supported Types
 
