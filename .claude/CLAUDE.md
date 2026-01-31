@@ -85,6 +85,10 @@ When adding LightClone implementations:
 2. Add tests in the appropriate test file
 3. For collections, use feature gates
 
+## Versioning
+
+This project uses **lockstep versioning**: both `light_clone` and `light_clone_derive` share the same version number. When bumping versions, update both crates together even if only one changed. This simplifies the mental model for users.
+
 ---
 
 # Coding Style Guide
