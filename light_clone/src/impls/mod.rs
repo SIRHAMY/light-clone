@@ -11,3 +11,6 @@ mod imbl_collections;
 
 #[cfg(feature = "rpds")]
 mod rpds_collections;
+
+#[cfg(feature = "uuid")]
+mod uuid;
