@@ -60,6 +60,34 @@ let s: LightStr = "hello".into_light_str();
 let clone = s.lc();  // O(1) - just increments refcount
 ```
 
+## Supported Types
+
+### Primitives
+All primitive types: `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `bool`, `char`, `()`
+
+### Smart Pointers
+- `Arc<T>` where `T: ?Sized`
+- `Rc<T>` where `T: ?Sized`
+- `std::sync::Weak<T>` where `T: ?Sized`
+- `std::rc::Weak<T>` where `T: ?Sized`
+
+### Containers
+- `Option<T>` where `T: LightClone`
+- `Result<T, E>` where `T: LightClone, E: LightClone`
+- `PhantomData<T>`
+- Tuples up to 12 elements
+
+### Enums
+
+```rust
+#[derive(LightClone)]
+enum State {
+    Idle,
+    Loading { progress: u8 },
+    Ready(Arc<Data>),
+}
+```
+
 ## Features
 
 Enable integrations with popular crates via feature flags:
@@ -94,34 +122,6 @@ light_clone = { version = "0.3", features = ["bytes", "smol_str"] }
 | Feature | Description |
 |---------|-------------|
 | `full` | Enable all optional integrations |
-
-## Supported Types
-
-### Primitives
-All primitive types: `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `bool`, `char`, `()`
-
-### Smart Pointers
-- `Arc<T>` where `T: ?Sized`
-- `Rc<T>` where `T: ?Sized`
-- `std::sync::Weak<T>` where `T: ?Sized`
-- `std::rc::Weak<T>` where `T: ?Sized`
-
-### Containers
-- `Option<T>` where `T: LightClone`
-- `Result<T, E>` where `T: LightClone, E: LightClone`
-- `PhantomData<T>`
-- Tuples up to 12 elements
-
-### Enums
-
-```rust
-#[derive(LightClone)]
-enum State {
-    Idle,
-    Loading { progress: u8 },
-    Ready(Arc<Data>),
-}
-```
 
 ## When to Use Immutable Data Structures
 
