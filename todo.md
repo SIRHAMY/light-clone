@@ -4,6 +4,6 @@
 
 # P1
 
-- Consider blanket okays for anything that implements copy as well? 
+- Consider blanket okays for anything that implements copy as well? -> This is apparently hard and can't be done w/o nightly features. Workaround is for anyone to implement LightClone on their type manually.
 
 # P2
