@@ -40,7 +40,21 @@ let clone = config.lc();
 
 ### Compile-Time Safety
 
-Invalid types are caught at compile time:
+Add `#[derive(LightClone)]` to your structs and enums. All fields must implement `LightClone`:
+
+```rust
+use light_clone::LightClone;
+use std::sync::Arc;
+
+#[derive(LightClone)]
+struct MyType {
+    id: u64,                    // Copy types work
+    name: Arc<str>,             // Arc works
+    metadata: Option<Arc<str>>, // Containers of LightClone work
+}
+```
+
+If any field doesn't implement `LightClone`, you get a compile error:
 
 ```rust
 #[derive(LightClone)]
@@ -48,6 +62,8 @@ struct Invalid {
     data: String,  // Error: String does not implement LightClone
 }
 ```
+
+This ensures your types remain O(1) to clone as they evolve.
 
 ### Ergonomic Strings
 
