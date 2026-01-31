@@ -13,6 +13,8 @@ LightClone is for codebases that embrace immutable data structures. It provides 
 
 Types like `String`, `Vec`, or `HashMap` that perform deep copies are rejected at compile time.
 
+[crates.io](https://crates.io/crates/light_clone) | [docs.rs](https://docs.rs/light_clone)
+
 ## Usage
 
 ```rust
