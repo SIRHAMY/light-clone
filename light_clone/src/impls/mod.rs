@@ -14,3 +14,6 @@ mod rpds_collections;
 
 #[cfg(feature = "uuid")]
 mod uuid;
+
+#[cfg(feature = "chrono")]
+mod chrono_types;
