@@ -289,20 +289,20 @@ impl<T> LightClone for *const T {}
 
 **Tasks:**
 
-- [ ] Add `std::ops::Bound<T>` impl (where T: LightClone)
-- [ ] Add `std::pin::Pin<T>` impl (where T: LightClone)
-- [ ] Add `std::ptr::NonNull<T>` impl
-- [ ] Add `std::task::Poll<T>` impl (where T: LightClone)
-- [ ] Add `std::cell::Cell<T>` impl (where T: Copy + LightClone)
-- [ ] Add `std::mem::ManuallyDrop<T>` impl (where T: LightClone)
-- [ ] Add tests for new impls
+- [x] Add `std::ops::Bound<T>` impl (where T: LightClone)
+- [x] Add `std::pin::Pin<T>` impl (where T: LightClone)
+- [x] Add `std::ptr::NonNull<T>` impl
+- [x] Add `std::task::Poll<T>` impl (where T: LightClone)
+- [x] Add `std::cell::Cell<T>` impl (where T: Copy + LightClone)
+- [x] Add `std::mem::ManuallyDrop<T>` impl (where T: LightClone)
+- [x] Add tests for new impls
 
 **Verification:**
 
-- [ ] All new types can call `.light_clone()` and `.lc()`
-- [ ] All tests pass: `cargo test --workspace --all-features`
-- [ ] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [ ] Code review passes
+- [x] All new types can call `.light_clone()` and `.lc()`
+- [x] All tests pass: `cargo test --workspace --all-features`
+- [x] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
+- [x] Code review passes
 
 **Commit:** `[002][P5] Feature: Add LightClone for wrapper types`
 
@@ -371,6 +371,7 @@ macro_rules! impl_light_clone_for_fn {
 |-------|--------|--------|-------|
 | P3 | Complete | 8b95e4d | Documentation was partially done in P1/P2; finished README/CHANGELOG updates |
 | P4 | Complete | afba47b | Added Copy primitives: raw pointers, TypeId, PhantomPinned, network types, ThreadId, SystemTime |
+| P5 | Complete | ae31ebb | Added wrapper types: Bound, Pin, NonNull, Poll, Cell, ManuallyDrop |
 
 ## Design Details
 
