@@ -208,22 +208,22 @@ The key change is conceptual: before, `#[derive(LightClone)]` was sufficient. Af
 
 **Tasks:**
 
-- [ ] Update README usage examples to show `#[derive(Clone, LightClone)]`
-- [ ] Update trait documentation to describe marker trait nature
-- [ ] Add note about Dupe similarity for users familiar with that crate
-- [ ] Update any other doc comments referencing the old pattern
-- [ ] Add CHANGELOG entry describing the breaking change
-- [ ] Bump version in `light_clone/Cargo.toml`
-- [ ] Bump version in `light_clone_derive/Cargo.toml` (lockstep versioning)
-- [ ] Update `light_clone`'s dependency on `light_clone_derive` to new version
+- [x] Update README usage examples to show `#[derive(Clone, LightClone)]`
+- [x] Update trait documentation to describe marker trait nature
+- [x] Add note about Dupe similarity for users familiar with that crate
+- [x] Update any other doc comments referencing the old pattern
+- [x] Add CHANGELOG entry describing the breaking change
+- [x] Bump version in `light_clone/Cargo.toml`
+- [x] Bump version in `light_clone_derive/Cargo.toml` (lockstep versioning)
+- [x] Update `light_clone`'s dependency on `light_clone_derive` to new version
 
 **Verification:**
 
-- [ ] Documentation accurately reflects new API
-- [ ] Doc examples compile: `cargo test --doc --workspace`
-- [ ] CHANGELOG clearly describes the breaking change
-- [ ] Both crate versions match (lockstep versioning)
-- [ ] Code review passes
+- [x] Documentation accurately reflects new API
+- [x] Doc examples compile: `cargo test --doc --workspace`
+- [x] CHANGELOG clearly describes the breaking change
+- [x] Both crate versions match (lockstep versioning)
+- [x] Code review passes
 
 **Commit:** `[002][P3] Docs: Update documentation and bump version for marker trait API`
 
@@ -247,20 +247,20 @@ This is a breaking change but acceptable for an alpha crate with minimal users. 
 
 **Tasks:**
 
-- [ ] Add raw pointer impls: `*const T`, `*mut T`
-- [ ] Add `std::any::TypeId` impl
-- [ ] Add `std::marker::PhantomPinned` impl
-- [ ] Add network types: `Ipv4Addr`, `Ipv6Addr`, `SocketAddrV4`, `SocketAddrV6`
-- [ ] Add `std::thread::ThreadId` impl
-- [ ] Add `std::time::SystemTime` impl
-- [ ] Add tests for new impls
+- [x] Add raw pointer impls: `*const T`, `*mut T`
+- [x] Add `std::any::TypeId` impl
+- [x] Add `std::marker::PhantomPinned` impl
+- [x] Add network types: `Ipv4Addr`, `Ipv6Addr`, `SocketAddrV4`, `SocketAddrV6`
+- [x] Add `std::thread::ThreadId` impl
+- [x] Add `std::time::SystemTime` impl
+- [x] Add tests for new impls
 
 **Verification:**
 
-- [ ] All new types can call `.light_clone()` and `.lc()`
-- [ ] All tests pass: `cargo test --workspace --all-features`
-- [ ] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [ ] Code review passes
+- [x] All new types can call `.light_clone()` and `.lc()`
+- [x] All tests pass: `cargo test --workspace --all-features`
+- [x] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
+- [x] Code review passes
 
 **Commit:** `[002][P4] Feature: Add LightClone for Copy primitives`
 
@@ -369,6 +369,8 @@ macro_rules! impl_light_clone_for_fn {
 
 | Phase | Status | Commit | Notes |
 |-------|--------|--------|-------|
+| P3 | Complete | 8b95e4d | Documentation was partially done in P1/P2; finished README/CHANGELOG updates |
+| P4 | Complete | afba47b | Added Copy primitives: raw pointers, TypeId, PhantomPinned, network types, ThreadId, SystemTime |
 
 ## Design Details
 

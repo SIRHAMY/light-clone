@@ -175,3 +175,74 @@ fn test_instant() {
     let cloned = now.light_clone();
     assert_eq!(now, cloned);
 }
+
+#[test]
+fn test_system_time() {
+    use std::time::SystemTime;
+
+    let now = SystemTime::now();
+    let cloned = now.light_clone();
+    assert_eq!(now, cloned);
+
+    let unix_epoch = SystemTime::UNIX_EPOCH;
+    assert_eq!(unix_epoch.light_clone(), unix_epoch);
+}
+
+#[test]
+fn test_type_id() {
+    use std::any::TypeId;
+
+    let id = TypeId::of::<i32>();
+    assert_eq!(id.light_clone(), id);
+
+    let string_id = TypeId::of::<String>();
+    assert_eq!(string_id.light_clone(), string_id);
+}
+
+#[test]
+fn test_phantom_pinned() {
+    use std::marker::PhantomPinned;
+
+    let _pinned = PhantomPinned.light_clone();
+    // PhantomPinned is a zero-sized type, just verify it compiles and doesn't panic
+}
+
+#[test]
+fn test_network_types() {
+    use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
+
+    let ipv4 = Ipv4Addr::new(192, 168, 1, 1);
+    assert_eq!(ipv4.light_clone(), ipv4);
+
+    let ipv6 = Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1);
+    assert_eq!(ipv6.light_clone(), ipv6);
+
+    let socket_v4 = SocketAddrV4::new(ipv4, 8080);
+    assert_eq!(socket_v4.light_clone(), socket_v4);
+
+    let socket_v6 = SocketAddrV6::new(ipv6, 443, 0, 0);
+    assert_eq!(socket_v6.light_clone(), socket_v6);
+}
+
+#[test]
+fn test_thread_id() {
+    use std::thread;
+
+    let id = thread::current().id();
+    assert_eq!(id.light_clone(), id);
+}
+
+#[test]
+fn test_raw_pointers() {
+    let value: i32 = 42;
+    let const_ptr: *const i32 = &value;
+    let mut_ptr: *mut i32 = &value as *const i32 as *mut i32;
+
+    assert_eq!(const_ptr.light_clone(), const_ptr);
+    assert_eq!(mut_ptr.light_clone(), mut_ptr);
+
+    // Test with unsized types
+    let slice: &[i32] = &[1, 2, 3];
+    let const_slice_ptr: *const [i32] = slice;
+    assert_eq!(const_slice_ptr.light_clone(), const_slice_ptr);
+}
