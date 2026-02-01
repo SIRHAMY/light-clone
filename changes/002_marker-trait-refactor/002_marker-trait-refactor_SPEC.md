@@ -327,16 +327,16 @@ These wrappers delegate to their inner type's LightClone bound where appropriate
 
 **Tasks:**
 
-- [ ] Create `fn_pointers.rs` with macro for fn pointer impls (0-12 params)
-- [ ] Add `mod fn_pointers;` to `impls/mod.rs`
-- [ ] Add tests for function pointers at 0, 1, 6, and 12 params
+- [x] Create `fn_pointers.rs` with macro for fn pointer impls (0-12 params)
+- [x] Add `mod fn_pointers;` to `impls/mod.rs`
+- [x] Add tests for function pointers at 0, 1, 6, and 12 params
 
 **Verification:**
 
-- [ ] Function pointers can call `.light_clone()` and `.lc()`
-- [ ] All tests pass: `cargo test --workspace --all-features`
-- [ ] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [ ] Code review passes
+- [x] Function pointers can call `.light_clone()` and `.lc()`
+- [x] All tests pass: `cargo test --workspace --all-features`
+- [x] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
+- [x] Code review passes
 
 **Commit:** `[002][P6] Feature: Add LightClone for function pointers`
 
@@ -372,6 +372,7 @@ macro_rules! impl_light_clone_for_fn {
 | P3 | Complete | 8b95e4d | Documentation was partially done in P1/P2; finished README/CHANGELOG updates |
 | P4 | Complete | afba47b | Added Copy primitives: raw pointers, TypeId, PhantomPinned, network types, ThreadId, SystemTime |
 | P5 | Complete | ae31ebb | Added wrapper types: Bound, Pin, NonNull, Poll, Cell, ManuallyDrop |
+| P6 | Complete | c2b6246 | Added function pointer impls (0-12 params) via macro, with tests |
 
 ## Design Details
 

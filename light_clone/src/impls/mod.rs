@@ -1,4 +1,5 @@
 mod containers;
+mod fn_pointers;
 mod primitives;
 mod smart_pointers;
 mod tuples;
