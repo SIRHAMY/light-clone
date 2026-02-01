@@ -7,19 +7,9 @@
 
 use crate::LightClone;
 
-impl<T: Copy> LightClone for ordered_float::OrderedFloat<T> {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        *self
-    }
-}
+impl<T: Copy> LightClone for ordered_float::OrderedFloat<T> {}
 
-impl<T: Copy> LightClone for ordered_float::NotNan<T> {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        *self
-    }
-}
+impl<T: Copy> LightClone for ordered_float::NotNan<T> {}
 
 #[cfg(test)]
 mod tests {

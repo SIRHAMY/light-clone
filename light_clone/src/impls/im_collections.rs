@@ -4,22 +4,13 @@
 
 use crate::LightClone;
 
-impl<T: Clone> LightClone for im::Vector<T> {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
-}
+impl<T: Clone> LightClone for im::Vector<T> {}
 
 impl<K, V> LightClone for im::HashMap<K, V>
 where
     K: Clone + std::hash::Hash + Eq,
     V: Clone,
 {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
 }
 
 impl<K, V> LightClone for im::OrdMap<K, V>
@@ -27,31 +18,11 @@ where
     K: Clone + Ord,
     V: Clone,
 {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
 }
 
-impl<T> LightClone for im::HashSet<T>
-where
-    T: Clone + std::hash::Hash + Eq,
-{
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
-}
+impl<T> LightClone for im::HashSet<T> where T: Clone + std::hash::Hash + Eq {}
 
-impl<T> LightClone for im::OrdSet<T>
-where
-    T: Clone + Ord,
-{
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
-}
+impl<T> LightClone for im::OrdSet<T> where T: Clone + Ord {}
 
 #[cfg(test)]
 mod tests {

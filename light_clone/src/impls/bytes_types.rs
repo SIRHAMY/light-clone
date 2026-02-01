@@ -10,12 +10,7 @@
 
 use crate::LightClone;
 
-impl LightClone for bytes::Bytes {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
-}
+impl LightClone for bytes::Bytes {}
 
 #[cfg(test)]
 mod tests {

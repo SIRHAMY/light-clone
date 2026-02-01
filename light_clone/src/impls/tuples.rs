@@ -2,14 +2,7 @@ use crate::LightClone;
 
 macro_rules! impl_light_clone_for_tuple {
     ($($name:ident),+) => {
-        impl<$($name: LightClone),+> LightClone for ($($name,)+) {
-            #[inline]
-            fn light_clone(&self) -> Self {
-                #[allow(non_snake_case)]
-                let ($($name,)+) = self;
-                ($($name.light_clone(),)+)
-            }
-        }
+        impl<$($name: LightClone),+> LightClone for ($($name,)+) {}
     };
 }
 

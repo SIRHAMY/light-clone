@@ -6,21 +6,16 @@
 
 use crate::LightClone;
 
-/// Macro to implement LightClone for Copy types.
-macro_rules! impl_light_clone_for_copy {
+/// Macro to implement LightClone for types.
+macro_rules! impl_light_clone {
     ($($t:ty),* $(,)?) => {
         $(
-            impl LightClone for $t {
-                #[inline]
-                fn light_clone(&self) -> Self {
-                    *self
-                }
-            }
+            impl LightClone for $t {}
         )*
     };
 }
 
-impl_light_clone_for_copy!(
+impl_light_clone!(
     time::Date,
     time::Time,
     time::PrimitiveDateTime,

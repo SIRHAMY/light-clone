@@ -7,12 +7,7 @@
 
 use crate::LightClone;
 
-impl LightClone for rust_decimal::Decimal {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        *self
-    }
-}
+impl LightClone for rust_decimal::Decimal {}
 
 #[cfg(test)]
 mod tests {

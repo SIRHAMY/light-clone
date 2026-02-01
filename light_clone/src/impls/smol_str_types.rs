@@ -9,12 +9,7 @@
 
 use crate::LightClone;
 
-impl LightClone for smol_str::SmolStr {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self.clone()
-    }
-}
+impl LightClone for smol_str::SmolStr {}
 
 #[cfg(test)]
 mod tests {

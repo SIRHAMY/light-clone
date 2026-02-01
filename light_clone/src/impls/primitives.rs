@@ -5,22 +5,17 @@ use std::num::{
 };
 use std::time::{Duration, Instant};
 
-/// Macro to implement LightClone for Copy types.
-/// For Copy types, `.light_clone()` is simply `*self` (bitwise copy).
-macro_rules! impl_light_clone_for_copy {
+/// Macro to implement LightClone for types.
+/// With the marker trait pattern, all impls are empty - the default impl calls `clone()`.
+macro_rules! impl_light_clone {
     ($($t:ty),* $(,)?) => {
         $(
-            impl LightClone for $t {
-                #[inline]
-                fn light_clone(&self) -> Self {
-                    *self
-                }
-            }
+            impl LightClone for $t {}
         )*
     };
 }
 
-impl_light_clone_for_copy!(
+impl_light_clone!(
     // Primitives
     i8,
     i16,
@@ -57,9 +52,4 @@ impl_light_clone_for_copy!(
 );
 
 // Shared references are Copy types
-impl<T: ?Sized> LightClone for &T {
-    #[inline]
-    fn light_clone(&self) -> Self {
-        self
-    }
-}
+impl<T: ?Sized> LightClone for &T {}
