@@ -21,7 +21,7 @@ Types like `String`, `Vec`, or `HashMap` that perform deep copies are rejected a
 use light_clone::LightClone;
 use std::sync::Arc;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct Config {
     name: Arc<str>,
     max_connections: u32,
@@ -40,13 +40,13 @@ let clone = config.lc();
 
 ### Compile-Time Safety
 
-Add `#[derive(LightClone)]` to your structs and enums. All fields must implement `LightClone`:
+Add `#[derive(Clone, LightClone)]` to your structs and enums. All fields must implement `LightClone`:
 
 ```rust
 use light_clone::LightClone;
 use std::sync::Arc;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct MyType {
     id: u64,                    // Copy types work
     name: Arc<str>,             // Arc works
@@ -57,7 +57,7 @@ struct MyType {
 If any field doesn't implement `LightClone`, you get a compile error:
 
 ```rust
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct Invalid {
     data: String,  // Error: String does not implement LightClone
 }
@@ -96,7 +96,7 @@ All primitive types: `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `bool`, `char`, `()
 ### Enums
 
 ```rust
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum State {
     Idle,
     Loading { progress: u8 },
