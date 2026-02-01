@@ -1,2 +1,9 @@
 target/
 Cargo.lock
+
+# Development containers
+.devcontainer/
+
+# Claude Code custom workflows
+.claude/commands/changes/
+.claude/skills/changes/
