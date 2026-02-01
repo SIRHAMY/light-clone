@@ -7,3 +7,5 @@
 - Consider blanket okays for anything that implements copy as well? -> This is apparently hard and can't be done w/o nightly features. Workaround is for anyone to implement LightClone on their type manually.
 
 # P2
+
+- See `changes/002_marker-trait-refactor/` for marker trait refactor + missing std impls
