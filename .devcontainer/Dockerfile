@@ -6,7 +6,6 @@ FROM node:20
 ARG TZ
 ENV TZ="$TZ"
 
-ARG CLAUDE_CODE_VERSION=latest
 ARG GIT_DELTA_VERSION=0.18.2
 ARG ZSH_IN_DOCKER_VERSION=1.2.0
 
@@ -49,8 +48,9 @@ RUN mkdir -p /home/node/.claude && chown node:node /home/node/.claude
 # Create command history directory for persistence
 RUN mkdir -p /commandhistory && chown node:node /commandhistory
 
-# Install Claude CLI
-RUN npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+# Install Claude CLI (as node user via native installer)
+# Note: Must use bash, not sh, as the install script uses bash-specific syntax
+RUN su - node -c "curl -fsSL https://claude.ai/install.sh | bash"
 
 # Add firewall init script
 COPY init-firewall.sh /usr/local/bin/init-firewall.sh
