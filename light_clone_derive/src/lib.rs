@@ -1,63 +1,108 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use quote::{format_ident, quote};
-use syn::{parse_macro_input, Data, DeriveInput, Fields, FieldsNamed, FieldsUnnamed, Ident, Index};
+use quote::quote;
+use syn::{parse_macro_input, Data, DeriveInput, GenericParam, WhereClause, WherePredicate};
 
 /// Derive macro for `LightClone` trait.
+///
+/// This macro generates a `LightClone` implementation for structs and enums.
+/// The generated impl uses the default `light_clone()` method (which calls `clone()`),
+/// but adds `LightClone` bounds for all field types to ensure compile-time enforcement
+/// that all fields are O(1) to clone.
+///
+/// # Usage
+///
+/// ```ignore
+/// use light_clone::LightClone;
+///
+/// #[derive(Clone, LightClone)]
+/// struct Person {
+///     id: i64,
+///     name: Arc<str>,
+/// }
+/// ```
+///
+/// **Important:** You must also derive or implement `Clone` separately. The derive macro
+/// no longer generates a `Clone` impl - it only generates `LightClone`.
+///
+/// # How it works
+///
+/// The macro generates an impl with where clause bounds that require all field types
+/// to implement `LightClone`. This provides compile-time enforcement that all fields
+/// are cheap to clone, while the actual cloning is delegated to the `Clone` impl.
+///
+/// For generic types, the macro adds `LightClone` bounds to ensure the generic
+/// parameters also satisfy the O(1) clone requirement.
 #[proc_macro_derive(LightClone)]
 pub fn derive_light_clone(input: TokenStream) -> TokenStream {
     derive_light_clone_impl(input)
 }
 
-/// Generates clone expressions for named struct fields accessed via `self.field`.
-fn generate_named_struct_clones(fields: &FieldsNamed) -> TokenStream2 {
-    let field_clones = fields.named.iter().map(|field| {
-        let ident = field.ident.as_ref().unwrap();
-        quote! { #ident: light_clone::LightClone::light_clone(&self.#ident) }
-    });
-    quote! {
-        Self {
-            #(#field_clones),*
+/// Collects all field types from a struct or enum for generating where clause bounds.
+fn collect_field_types(data: &Data) -> Vec<syn::Type> {
+    let mut types = Vec::new();
+
+    match data {
+        Data::Struct(data_struct) => {
+            for field in &data_struct.fields {
+                types.push(field.ty.clone());
+            }
+        }
+        Data::Enum(data_enum) => {
+            for variant in &data_enum.variants {
+                for field in &variant.fields {
+                    types.push(field.ty.clone());
+                }
+            }
+        }
+        Data::Union(_) => {
+            // Unions are handled separately with an error
         }
     }
+
+    types
 }
 
-/// Generates clone expressions for unnamed struct fields accessed via `self.0`, `self.1`, etc.
-fn generate_unnamed_struct_clones(fields: &FieldsUnnamed) -> TokenStream2 {
-    let field_clones = fields.unnamed.iter().enumerate().map(|(index, _field)| {
-        let index = Index::from(index);
-        quote! { light_clone::LightClone::light_clone(&self.#index) }
-    });
-    quote! {
-        Self(#(#field_clones),*)
-    }
-}
+/// Builds the where clause with LightClone bounds for all field types.
+fn build_where_clause(
+    existing: Option<&WhereClause>,
+    field_types: &[syn::Type],
+    generics: &syn::Generics,
+) -> TokenStream2 {
+    // Collect existing predicates
+    let mut predicates: Vec<WherePredicate> = existing
+        .map(|w| w.predicates.iter().cloned().collect())
+        .unwrap_or_default();
 
-/// Generates a match arm for an enum variant with named fields.
-fn generate_named_variant_arm(variant_ident: &Ident, fields: &FieldsNamed) -> TokenStream2 {
-    let field_names: Vec<_> = fields
-        .named
+    // Get type parameter names for adding LightClone bounds
+    let type_params: Vec<_> = generics
+        .params
         .iter()
-        .map(|field| field.ident.as_ref().unwrap())
+        .filter_map(|param| {
+            if let GenericParam::Type(type_param) = param {
+                Some(type_param.ident.clone())
+            } else {
+                None
+            }
+        })
         .collect();
-    let field_clones = field_names.iter().map(|name| {
-        quote! { #name: light_clone::LightClone::light_clone(#name) }
-    });
-    quote! {
-        Self::#variant_ident { #(#field_names),* } => Self::#variant_ident { #(#field_clones),* }
-    }
-}
 
-/// Generates a match arm for an enum variant with unnamed (tuple) fields.
-fn generate_unnamed_variant_arm(variant_ident: &Ident, fields: &FieldsUnnamed) -> TokenStream2 {
-    let bindings: Vec<_> = (0..fields.unnamed.len())
-        .map(|index| format_ident!("__field_{}", index))
-        .collect();
-    let clones = bindings.iter().map(|binding| {
-        quote! { light_clone::LightClone::light_clone(#binding) }
-    });
-    quote! {
-        Self::#variant_ident(#(#bindings),*) => Self::#variant_ident(#(#clones),*)
+    // Add LightClone bounds for all type parameters
+    for type_param in &type_params {
+        let predicate: WherePredicate = syn::parse_quote!(#type_param: light_clone::LightClone);
+        predicates.push(predicate);
+    }
+
+    // Add LightClone bounds for all field types
+    for ty in field_types {
+        let predicate: WherePredicate = syn::parse_quote!(#ty: light_clone::LightClone);
+        predicates.push(predicate);
+    }
+
+    if predicates.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#predicates),* }
     }
 }
 
@@ -65,85 +110,28 @@ fn derive_light_clone_impl(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
     let generics = &input.generics;
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let (impl_generics, ty_generics, _) = generics.split_for_impl();
 
-    let light_clone_impl = match &input.data {
-        Data::Struct(data_struct) => {
-            let light_clone_body = match &data_struct.fields {
-                Fields::Named(fields) => generate_named_struct_clones(fields),
-                Fields::Unnamed(fields) => generate_unnamed_struct_clones(fields),
-                Fields::Unit => quote! { Self },
-            };
+    // Handle unions with an error
+    if let Data::Union(_) = &input.data {
+        return syn::Error::new_spanned(
+            &input.ident,
+            "LightClone derive is not supported for unions.",
+        )
+        .to_compile_error()
+        .into();
+    }
 
-            quote! {
-                impl #impl_generics light_clone::LightClone for #name #ty_generics #where_clause {
-                    fn light_clone(&self) -> Self {
-                        #light_clone_body
-                    }
-                }
+    // Collect field types for where clause bounds
+    let field_types = collect_field_types(&input.data);
 
-                impl #impl_generics Clone for #name #ty_generics #where_clause {
-                    fn clone(&self) -> Self {
-                        light_clone::LightClone::light_clone(self)
-                    }
-                }
-            }
-        }
-        Data::Enum(data_enum) => {
-            // Handle empty enums specially - they're uninhabited types
-            if data_enum.variants.is_empty() {
-                return quote! {
-                    impl #impl_generics light_clone::LightClone for #name #ty_generics #where_clause {
-                        fn light_clone(&self) -> Self {
-                            match *self {}
-                        }
-                    }
+    // Build the where clause with LightClone bounds
+    let where_clause =
+        build_where_clause(input.generics.where_clause.as_ref(), &field_types, generics);
 
-                    impl #impl_generics Clone for #name #ty_generics #where_clause {
-                        fn clone(&self) -> Self {
-                            match *self {}
-                        }
-                    }
-                }
-                .into();
-            }
-
-            let match_arms = data_enum.variants.iter().map(|variant| {
-                let variant_ident = &variant.ident;
-
-                match &variant.fields {
-                    Fields::Unit => {
-                        quote! { Self::#variant_ident => Self::#variant_ident }
-                    }
-                    Fields::Unnamed(fields) => generate_unnamed_variant_arm(variant_ident, fields),
-                    Fields::Named(fields) => generate_named_variant_arm(variant_ident, fields),
-                }
-            });
-
-            quote! {
-                impl #impl_generics light_clone::LightClone for #name #ty_generics #where_clause {
-                    fn light_clone(&self) -> Self {
-                        match self {
-                            #(#match_arms),*
-                        }
-                    }
-                }
-
-                impl #impl_generics Clone for #name #ty_generics #where_clause {
-                    fn clone(&self) -> Self {
-                        light_clone::LightClone::light_clone(self)
-                    }
-                }
-            }
-        }
-        Data::Union(_) => {
-            return syn::Error::new_spanned(
-                &input.ident,
-                "LightClone derive is not supported for unions.",
-            )
-            .to_compile_error()
-            .into();
-        }
+    // Generate the impl - empty body uses the default implementation
+    let light_clone_impl = quote! {
+        impl #impl_generics light_clone::LightClone for #name #ty_generics #where_clause {}
     };
 
     light_clone_impl.into()

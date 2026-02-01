@@ -98,7 +98,7 @@ fn im_ord_set_operations() {
     assert_eq!(elements, vec![1, 2, 3]);
 }
 
-#[derive(light_clone::LightClone)]
+#[derive(Clone, light_clone::LightClone)]
 struct PersonWithList {
     id: i32,
     name: light_clone::LightStr,

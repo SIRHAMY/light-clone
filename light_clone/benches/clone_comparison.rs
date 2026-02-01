@@ -105,7 +105,8 @@ impl Default for LargeStruct {
 
 /// An LightClone struct with 5 Arc fields.
 /// Clone cost: 5 atomic refcount increments (~41ns total).
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct FiveArcFields {
     field1: Arc<str>,
     field2: Arc<str>,
@@ -155,7 +156,8 @@ impl FiveStringFields {
 /// Arbitrarily deeply nested struct (LightClone version).
 /// Uses Option<Arc<Self>> for recursive nesting.
 /// Clone cost: O(depth) Arc refcount bumps - constant per level regardless of data size.
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct DeepNestedLc {
     value: Arc<str>,
     inner: Option<Arc<DeepNestedLc>>,
@@ -207,14 +209,16 @@ impl DeepNestedString {
 }
 
 /// Level 1 nested struct (LightClone version)
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct NestedLevel1Lc {
     value: Arc<str>,
     count: i64,
 }
 
 /// Level 2 nested struct (LightClone version)
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct NestedLevel2Lc {
     inner: NestedLevel1Lc,
     name: Arc<str>,
@@ -222,7 +226,8 @@ struct NestedLevel2Lc {
 
 /// Level 3 nested struct (LightClone version).
 /// Clone cost: 3 Arc refcount bumps + 1 i64 copy = constant time.
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct NestedLevel3Lc {
     inner: NestedLevel2Lc,
     data: Arc<str>,

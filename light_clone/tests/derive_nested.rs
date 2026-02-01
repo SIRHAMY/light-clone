@@ -1,13 +1,13 @@
 use light_clone::LightClone;
 use std::sync::Arc;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct Inner {
     value: i32,
     name: Arc<str>,
 }
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct Outer {
     inner: Inner,
     id: u64,
@@ -32,7 +32,7 @@ fn test_nested_struct() {
     assert!(Arc::ptr_eq(&outer.inner.name, &cloned.inner.name));
 }
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct DeeplyNested {
     outer: Outer,
     extra: Arc<str>,
@@ -61,7 +61,8 @@ fn test_deeply_nested_struct() {
     assert!(Arc::ptr_eq(&deep.extra, &cloned.extra));
 }
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 struct WithOption {
     maybe: Option<Arc<str>>,
     definitely: i32,

@@ -32,7 +32,7 @@ fn light_str_clone_is_o1() {
 
 #[test]
 fn light_str_can_be_used_in_derived_struct() {
-    #[derive(LightClone, Debug, PartialEq)]
+    #[derive(Clone, LightClone, Debug, PartialEq)]
     struct Person {
         name: LightStr,
         email: LightStr,

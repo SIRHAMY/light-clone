@@ -1,6 +1,6 @@
 use light_clone::LightClone;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct BadStruct {
     name: String, // String does not implement LightClone
 }

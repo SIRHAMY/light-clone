@@ -1,6 +1,6 @@
 use light_clone::LightClone;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum BadEnum {
     Good(i32),
     Bad(String), // String does not implement LightClone

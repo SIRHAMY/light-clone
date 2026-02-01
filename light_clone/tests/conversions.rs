@@ -39,7 +39,7 @@ fn into_light_str_result_is_light_clone() {
 
 #[test]
 fn into_light_str_str_in_derived_struct() {
-    #[derive(LightClone, Debug, PartialEq)]
+    #[derive(Clone, LightClone, Debug, PartialEq)]
     struct Config {
         host: LightStr,
         port: u16,

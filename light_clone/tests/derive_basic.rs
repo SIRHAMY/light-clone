@@ -1,7 +1,7 @@
 use light_clone::LightClone;
 use std::sync::Arc;
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct PrimitiveStruct {
     a: i32,
     b: u64,
@@ -29,7 +29,7 @@ fn test_basic_struct_with_primitives() {
 }
 
 #[test]
-fn test_clone_delegates_to_lc() {
+fn test_clone_and_light_clone_equivalent() {
     let s = PrimitiveStruct {
         a: 1,
         b: 2,
@@ -38,12 +38,13 @@ fn test_clone_delegates_to_lc() {
         e: 'y',
     };
 
-    let cloned = s.clone();
-    assert_eq!(cloned.a, 1);
-    assert_eq!(cloned.b, 2);
+    let cloned_via_clone = s.clone();
+    let cloned_via_lc = s.light_clone();
+    assert_eq!(cloned_via_clone.a, cloned_via_lc.a);
+    assert_eq!(cloned_via_clone.b, cloned_via_lc.b);
 }
 
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 struct ArcFieldsStruct {
     name: Arc<str>,
     data: Arc<[u8]>,
@@ -80,4 +81,43 @@ fn test_arc_strong_count_after_lc() {
     let cloned = s.light_clone();
     assert_eq!(Arc::strong_count(&s.name), 2);
     assert_eq!(Arc::strong_count(&cloned.name), 2);
+}
+
+// Test: manual Clone impl + derived LightClone
+struct ManualClone {
+    value: i32,
+}
+
+impl Clone for ManualClone {
+    fn clone(&self) -> Self {
+        ManualClone { value: self.value }
+    }
+}
+
+// We can manually implement LightClone for a type with manual Clone
+impl LightClone for ManualClone {}
+
+#[test]
+fn test_manual_clone_with_light_clone() {
+    let m = ManualClone { value: 42 };
+    let cloned = m.light_clone();
+    assert_eq!(cloned.value, 42);
+}
+
+// Test: derived Clone + derived LightClone (the recommended pattern)
+#[derive(Clone, LightClone)]
+struct DerivedBoth {
+    id: u64,
+    name: Arc<str>,
+}
+
+#[test]
+fn test_derived_clone_and_light_clone() {
+    let d = DerivedBoth {
+        id: 123,
+        name: Arc::from("both"),
+    };
+    let cloned = d.light_clone();
+    assert_eq!(cloned.id, 123);
+    assert!(Arc::ptr_eq(&d.name, &cloned.name));
 }

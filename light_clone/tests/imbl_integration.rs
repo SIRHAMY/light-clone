@@ -56,7 +56,7 @@ fn imbl_vector_clone_shares_structure() {
     assert_eq!(modified.len(), 6);
 }
 
-#[derive(light_clone::LightClone)]
+#[derive(Clone, light_clone::LightClone)]
 struct PersonWithImblVector {
     id: i32,
     name: light_clone::LightStr,

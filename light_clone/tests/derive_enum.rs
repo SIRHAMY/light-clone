@@ -2,7 +2,8 @@ use light_clone::LightClone;
 use std::sync::Arc;
 
 // Unit variant enum
-#[derive(LightClone, PartialEq, Debug)]
+#[derive(Clone, LightClone, PartialEq, Debug)]
+#[allow(dead_code)]
 enum Status {
     Pending,
     Active,
@@ -21,7 +22,7 @@ fn test_unit_variants() {
 }
 
 // Tuple variant enum
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum Message {
     Quit,
     Move(i32, i32),
@@ -60,7 +61,7 @@ fn test_tuple_variant_arc_sharing() {
 }
 
 // Struct variant enum
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum Event {
     Click { x: i32, y: i32 },
     KeyPress { key: Arc<str>, modifiers: u8 },
@@ -108,7 +109,7 @@ fn test_struct_variant_arc_sharing() {
 }
 
 // Mixed variant enum
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum MixedEnum {
     Unit,
     Tuple(i32, Arc<str>),
@@ -147,7 +148,7 @@ fn test_mixed_enum() {
 }
 
 // Generic enum
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum Option2<T: LightClone> {
     None,
     Some(T),
@@ -180,26 +181,28 @@ fn test_generic_enum_with_arc() {
     }
 }
 
-// Clone delegation test
-#[derive(LightClone)]
+// Clone and light_clone equivalence test
+#[derive(Clone, LightClone)]
+#[allow(dead_code)]
 enum SimpleEnum {
     A(i32),
     B,
 }
 
 #[test]
-fn test_clone_delegates_to_light_clone() {
+fn test_clone_and_light_clone_equivalent() {
     let e = SimpleEnum::A(42);
-    let cloned = e.clone(); // Uses Clone, which delegates to LightClone
+    let cloned_via_clone = e.clone();
+    let cloned_via_lc = e.light_clone();
 
-    match cloned {
-        SimpleEnum::A(v) => assert_eq!(v, 42),
+    match (cloned_via_clone, cloned_via_lc) {
+        (SimpleEnum::A(v1), SimpleEnum::A(v2)) => assert_eq!(v1, v2),
         _ => panic!("Expected A variant"),
     }
 }
 
 // Single-field tuple variant
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum SingleField {
     Value(Arc<str>),
 }
@@ -218,13 +221,13 @@ fn test_single_field_tuple_variant() {
 }
 
 // Empty enum (uninhabited type)
-#[derive(LightClone)]
+#[derive(Clone, LightClone)]
 enum Empty {}
 
 #[test]
 fn test_empty_enum_compiles() {
     // Empty enums cannot be instantiated, but the derive should compile
-    // and generate a valid (empty) match expression
+    // and generate a valid impl
     fn _assert_light_clone<T: LightClone>() {}
     _assert_light_clone::<Empty>();
 }
