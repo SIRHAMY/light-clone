@@ -92,6 +92,18 @@ All primitive types: `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `bool`, `char`, `()
 - `Result<T, E>` where `T: LightClone, E: LightClone`
 - `PhantomData<T>`
 - Tuples up to 12 elements
+- `[T; N]` arrays where `T: LightClone + Copy`
+
+### Wrapper Types
+- `Pin<T>` where `T: LightClone`
+- `Bound<T>` where `T: LightClone`
+- `Poll<T>` where `T: LightClone`
+- `ManuallyDrop<T>` where `T: LightClone`
+- `Cell<T>` where `T: LightClone + Copy`
+- `NonNull<T>` where `T: ?Sized`
+
+### Function Pointers
+- `fn(...) -> R` with up to 12 arguments
 
 ### Enums
 
@@ -103,6 +115,33 @@ enum State {
     Ready(Arc<Data>),
 }
 ```
+
+### Implementing for Custom Types
+
+Since `LightClone` is a marker trait, you can implement it for your own types or third-party types that are O(1) to clone:
+
+```rust
+use light_clone::LightClone;
+use std::sync::Arc;
+
+// For a type you know is O(1) to clone
+struct MyArcWrapper(Arc<str>);
+
+impl Clone for MyArcWrapper {
+    fn clone(&self) -> Self {
+        MyArcWrapper(self.0.clone())
+    }
+}
+
+impl LightClone for MyArcWrapper {}
+```
+
+The trait provides default implementations for `light_clone()` and `lc()` that delegate to `clone()`, so an empty impl is all you need.
+
+This is useful for:
+- Third-party types that are O(1) to clone but don't have built-in LightClone support
+- Newtypes wrapping LightClone types
+- Types from external crates where you can't use the derive macro
 
 ## Features
 
