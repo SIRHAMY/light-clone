@@ -1,7 +1,7 @@
 # SPEC: Marker Trait Refactor
 
 **ID:** 002
-**Status:** Draft
+**Status:** Complete
 **Created:** 2026-02-01
 **PRD:** N/A (Internal refactor based on Dupe comparison)
 **Execution Mode:** human-in-the-loop
@@ -102,31 +102,31 @@ The derive macro changes to:
 
 **Tasks:**
 
-- [ ] Add default implementation `fn light_clone(&self) -> Self { self.clone() }` to trait
-- [ ] Keep `.lc()` shorthand with its existing default impl
-- [ ] Update trait documentation to reflect marker trait nature
-- [ ] Simplify `primitives.rs` macro to generate empty impls
-- [ ] Simplify `smart_pointers.rs` to empty impls
-- [ ] Simplify `tuples.rs` macro to generate empty impls
-- [ ] Simplify `containers.rs` to empty impls
-- [ ] Simplify `im_collections.rs` to empty impls
-- [ ] Simplify `imbl_collections.rs` to empty impls
-- [ ] Simplify `rpds_collections.rs` to empty impls
-- [ ] Simplify `bytes_types.rs` to empty impls
-- [ ] Simplify `chrono_types.rs` to empty impls
-- [ ] Simplify `ordered_float_types.rs` to empty impls
-- [ ] Simplify `rust_decimal_types.rs` to empty impls
-- [ ] Simplify `smol_str_types.rs` to empty impls
-- [ ] Simplify `time_types.rs` to empty impls
-- [ ] Simplify `uuid.rs` to empty impls
-- [ ] Remove any unused imports after simplification
+- [x] Add default implementation `fn light_clone(&self) -> Self { self.clone() }` to trait
+- [x] Keep `.lc()` shorthand with its existing default impl
+- [x] Update trait documentation to reflect marker trait nature
+- [x] Simplify `primitives.rs` macro to generate empty impls
+- [x] Simplify `smart_pointers.rs` to empty impls
+- [x] Simplify `tuples.rs` macro to generate empty impls
+- [x] Simplify `containers.rs` to empty impls
+- [x] Simplify `im_collections.rs` to empty impls
+- [x] Simplify `imbl_collections.rs` to empty impls
+- [x] Simplify `rpds_collections.rs` to empty impls
+- [x] Simplify `bytes_types.rs` to empty impls
+- [x] Simplify `chrono_types.rs` to empty impls
+- [x] Simplify `ordered_float_types.rs` to empty impls
+- [x] Simplify `rust_decimal_types.rs` to empty impls
+- [x] Simplify `smol_str_types.rs` to empty impls
+- [x] Simplify `time_types.rs` to empty impls
+- [x] Simplify `uuid.rs` to empty impls
+- [x] Remove any unused imports after simplification
 
 **Verification:**
 
-- [ ] Trait compiles with default impl
-- [ ] All tests pass: `cargo test --workspace --all-features`
-- [ ] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [ ] Code review passes
+- [x] Trait compiles with default impl
+- [x] All tests pass: `cargo test --workspace --all-features`
+- [x] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
+- [x] Code review passes
 
 **Commit:** `[002][P1] Clean: Simplify LightClone to marker trait with empty impls`
 
@@ -157,29 +157,29 @@ Update all tests in the same phase to keep CI green.
 
 **Tasks:**
 
-- [ ] Remove `Clone` impl generation from derive macro
-- [ ] Change generated `LightClone` impl to have empty body (uses default)
-- [ ] Ensure where clause requires `LightClone` bound on all fields
-- [ ] Verify generics handling: type parameters, lifetimes, existing where clauses (follow Dupe's pattern)
-- [ ] Update derive macro documentation
-- [ ] Update integration tests to use `#[derive(Clone, LightClone)]`
-- [ ] Update UI tests for new expected error messages (trait bound errors)
-- [ ] Verify compile-fail tests still catch non-LightClone fields
-- [ ] Add integration test: manual `Clone` impl + derived `LightClone`
-- [ ] Add integration test: derived `Clone` + derived `LightClone`
-- [ ] Add compile-fail test: `LightClone` without `Clone` (should fail)
-- [ ] Add integration test: generic struct `Container<T>` requires `T: LightClone`
-- [ ] Add compile-fail test: generic struct with `T = String` (should fail)
+- [x] Remove `Clone` impl generation from derive macro
+- [x] Change generated `LightClone` impl to have empty body (uses default)
+- [x] Ensure where clause requires `LightClone` bound on all fields
+- [x] Verify generics handling: type parameters, lifetimes, existing where clauses (follow Dupe's pattern)
+- [x] Update derive macro documentation
+- [x] Update integration tests to use `#[derive(Clone, LightClone)]`
+- [x] Update UI tests for new expected error messages (trait bound errors)
+- [x] Verify compile-fail tests still catch non-LightClone fields
+- [x] Add integration test: manual `Clone` impl + derived `LightClone`
+- [x] Add integration test: derived `Clone` + derived `LightClone`
+- [x] Add compile-fail test: `LightClone` without `Clone` (should fail)
+- [x] Add integration test: generic struct `Container<T>` requires `T: LightClone`
+- [x] Add compile-fail test: generic struct with `T = String` (should fail)
 
 **Verification:**
 
-- [ ] Derive works with `#[derive(Clone, LightClone)]`
-- [ ] Compile error when field doesn't impl LightClone
-- [ ] Generic structs correctly require `LightClone` bounds on type parameters
-- [ ] All tests pass: `cargo test --workspace --all-features`
-- [ ] UI tests pass with correct error messages
-- [ ] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
-- [ ] Code review passes
+- [x] Derive works with `#[derive(Clone, LightClone)]`
+- [x] Compile error when field doesn't impl LightClone
+- [x] Generic structs correctly require `LightClone` bounds on type parameters
+- [x] All tests pass: `cargo test --workspace --all-features`
+- [x] UI tests pass with correct error messages
+- [x] Clippy passes: `cargo clippy --workspace --all-features --all-targets -- -D warnings`
+- [x] Code review passes
 
 **Commit:** `[002][P2] Clean: Simplify derive macro to bounds-only with updated tests`
 
@@ -355,24 +355,26 @@ macro_rules! impl_light_clone_for_fn {
 
 ## Final Verification
 
-- [ ] All phases complete
-- [ ] All existing tests pass
-- [ ] New usage pattern works: `#[derive(Clone, LightClone)]`
-- [ ] Compile-time enforcement still works (non-LightClone fields rejected)
-- [ ] `.lc()` shorthand still works
-- [ ] Documentation reflects new API
-- [ ] CHANGELOG documents breaking change
-- [ ] Version bumped in both crates
-- [ ] All std types from Dupe are now supported
+- [x] All phases complete
+- [x] All existing tests pass
+- [x] New usage pattern works: `#[derive(Clone, LightClone)]`
+- [x] Compile-time enforcement still works (non-LightClone fields rejected)
+- [x] `.lc()` shorthand still works
+- [x] Documentation reflects new API
+- [x] CHANGELOG documents breaking change
+- [x] Version bumped in both crates
+- [x] All std types from Dupe are now supported
 
 ## Execution Log
 
 | Phase | Status | Commit | Notes |
 |-------|--------|--------|-------|
+| P1 | Complete | e075430 | Simplified LightClone to marker trait with default impl, converted all impls to empty bodies |
+| P2 | Complete | 22da2a4 | Simplified derive macro to bounds-only impl, updated all tests and UI tests |
 | P3 | Complete | 8b95e4d | Documentation was partially done in P1/P2; finished README/CHANGELOG updates |
-| P4 | Complete | afba47b | Added Copy primitives: raw pointers, TypeId, PhantomPinned, network types, ThreadId, SystemTime |
-| P5 | Complete | ae31ebb | Added wrapper types: Bound, Pin, NonNull, Poll, Cell, ManuallyDrop |
-| P6 | Complete | c2b6246 | Added function pointer impls (0-12 params) via macro, with tests |
+| P4 | Complete | 444b78e | Added Copy primitives: raw pointers, TypeId, PhantomPinned, network types, ThreadId, SystemTime |
+| P5 | Complete | 65fb373 | Added wrapper types: Bound, Pin, NonNull, Poll, Cell, ManuallyDrop |
+| P6 | Complete | 6ba06f5 | Added function pointer impls (0-12 params) via macro, with tests |
 
 ## Design Details
 
@@ -459,10 +461,19 @@ Dupe doesn't have this, but it's a nice ergonomic win for call sites with no add
 
 ## Retrospective
 
-[Fill in after completion]
-
 ### What worked well?
+
+- The marker trait pattern significantly simplified the codebase - all implementations became trivial empty impls
+- The phase separation worked well: trait/impls (P1), derive macro/tests (P2), docs (P3), new impls (P4-P6)
+- Keeping tests atomic with code changes in P2 maintained CI green throughout
+- Feature-gated implementations required no structural changes, just simplification
 
 ### What was harder than expected?
 
+- Coordinating derive macro changes with test updates required careful attention to ensure all UI tests had correct error messages
+- Some execution log entries weren't captured during implementation, requiring later backfill
+
 ### What would we do differently next time?
+
+- Update SPEC checkboxes immediately after completing each task, not at the end
+- Ensure execution log entries are added in the same session as the commit
